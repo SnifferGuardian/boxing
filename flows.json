@@ -1,8 +1,8 @@
 [
     {
-        "id": "55b291bfb25179d8",
+        "id": "1eb68bedd4b9ad01",
         "type": "debug",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "debug 1",
         "active": true,
         "tosidebar": true,
@@ -12,14 +12,14 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 360,
-        "y": 300,
+        "x": 320,
+        "y": 60,
         "wires": []
     },
     {
-        "id": "4a8ea43d704fc603",
+        "id": "35e2cdb98e5ef470",
         "type": "debug",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "debug 2",
         "active": true,
         "tosidebar": true,
@@ -29,95 +29,14 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 275,
-        "y": 1019,
+        "x": 235,
+        "y": 779,
         "wires": []
     },
     {
-        "id": "20621e1f8cb75757",
+        "id": "4f11e4a64f7ea6d2",
         "type": "delay",
-        "z": "3d6956ce1d3472bd",
-        "name": "",
-        "pauseType": "delay",
-        "timeout": "2",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "allowrate": false,
-        "outputs": 1,
-        "x": 835,
-        "y": 1019,
-        "wires": [
-            [
-                "4a8ea43d704fc603",
-                "6bcd6ac66e2ba999",
-                "383a80dee8da9b9e"
-            ]
-        ]
-    },
-    {
-        "id": "13eb7ef3c57f73fb",
-        "type": "delay",
-        "z": "3d6956ce1d3472bd",
-        "name": "",
-        "pauseType": "delay",
-        "timeout": "2",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "allowrate": false,
-        "outputs": 1,
-        "x": 855,
-        "y": 1199,
-        "wires": [
-            [
-                "5c9d0acdf48bb7d5",
-                "4a8ea43d704fc603",
-                "ccc2571ac60c3c34"
-            ]
-        ]
-    },
-    {
-        "id": "9c008c5a696252db",
-        "type": "delay",
-        "z": "3d6956ce1d3472bd",
-        "name": "",
-        "pauseType": "delay",
-        "timeout": "2",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "allowrate": false,
-        "outputs": 1,
-        "x": 815,
-        "y": 839,
-        "wires": [
-            [
-                "4a8ea43d704fc603",
-                "429c18ec46c6c09e",
-                "383a80dee8da9b9e"
-            ]
-        ]
-    },
-    {
-        "id": "f396604cc53e4808",
-        "type": "delay",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "",
         "pauseType": "delay",
         "timeout": "2",
@@ -132,356 +51,19 @@
         "allowrate": false,
         "outputs": 1,
         "x": 795,
-        "y": 699,
-        "wires": [
-            [
-                "4a8ea43d704fc603",
-                "bddf12a8673690ab",
-                "ba65b68f1e4ffae8",
-                "383a80dee8da9b9e"
-            ]
-        ]
-    },
-    {
-        "id": "bddf12a8673690ab",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit 'C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\1-05. Cycles.mp3'\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 1545,
-        "y": 639,
-        "wires": [
-            [
-                "9a74b135e69f0690"
-            ],
-            [
-                "9a74b135e69f0690"
-            ],
-            [
-                "750b08d6b2076d10"
-            ]
-        ]
-    },
-    {
-        "id": "429c18ec46c6c09e",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit 'C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\3-05. Electroman Adventures.mp3'\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 1595,
         "y": 779,
         "wires": [
-            [],
             [
-                "9a74b135e69f0690",
-                "70be72da9dbd298d"
-            ],
-            [
-                "750b08d6b2076d10"
+                "35e2cdb98e5ef470",
+                "490603b8f4a5fbb9",
+                "826efc9e3c4bd04c"
             ]
         ]
     },
     {
-        "id": "9a74b135e69f0690",
-        "type": "debug",
-        "z": "3d6956ce1d3472bd",
-        "name": "debug 4",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 2375,
-        "y": 879,
-        "wires": []
-    },
-    {
-        "id": "6bcd6ac66e2ba999",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit 'C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\5-03. Geometrical Dominator.mp3'\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 1595,
-        "y": 939,
-        "wires": [
-            [],
-            [
-                "9a74b135e69f0690"
-            ],
-            [
-                "750b08d6b2076d10"
-            ]
-        ]
-    },
-    {
-        "id": "ccc2571ac60c3c34",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit '\"C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\4-09. Hexagon Force.mp3\"'\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 1595,
-        "y": 1139,
-        "wires": [
-            [],
-            [
-                "9a74b135e69f0690"
-            ],
-            [
-                "750b08d6b2076d10"
-            ]
-        ]
-    },
-    {
-        "id": "f75e55de42f1deec",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 1330,
-        "y": 1260,
-        "wires": [
-            [],
-            [
-                "9a74b135e69f0690"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "7eab47ee399b1e13",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 670,
-        "y": 600,
-        "wires": [
-            [],
-            [],
-            []
-        ]
-    },
-    {
-        "id": "c5ec1bef0cf0a469",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 630,
-        "y": 780,
-        "wires": [
-            [],
-            [],
-            []
-        ]
-    },
-    {
-        "id": "1c2d47a1ca00983f",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 630,
-        "y": 940,
-        "wires": [
-            [],
-            [],
-            []
-        ]
-    },
-    {
-        "id": "7dbd4dbcc391eb31",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 590,
-        "y": 1100,
-        "wires": [
-            [],
-            [],
-            []
-        ]
-    },
-    {
-        "id": "b2fbbf0dcfc72646",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 610,
-        "y": 1400,
-        "wires": [
-            [],
-            [],
-            []
-        ]
-    },
-    {
-        "id": "c1cb731fa07b1a9a",
-        "type": "exec",
-        "z": "3d6956ce1d3472bd",
-        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit 'C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\Electrodynamix.mp3'\"",
-        "addpay": "",
-        "append": "",
-        "useSpawn": "false",
-        "timer": "",
-        "winHide": false,
-        "oldrc": false,
-        "name": "",
-        "x": 1595,
-        "y": 1439,
-        "wires": [
-            [],
-            [
-                "9a74b135e69f0690"
-            ],
-            [
-                "750b08d6b2076d10"
-            ]
-        ]
-    },
-    {
-        "id": "723d7302b58bf84c",
-        "type": "debug",
-        "z": "3d6956ce1d3472bd",
-        "name": "debug 3",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1000,
-        "y": 1980,
-        "wires": []
-    },
-    {
-        "id": "26a08b4a0c49d4e3",
-        "type": "function",
-        "z": "3d6956ce1d3472bd",
-        "name": "function 1",
-        "func": "// 1. Get the stored value (ensure it's a number)\nlet old = context.get(\"old\") || 0;\n\n// 2. Normalize the input to a string for comparison\nlet inputStr = String(msg.payload).toLowerCase().trim();\n\n// 3. Check for Reset/Off triggers first\nif (inputStr === \"off\" || inputStr === \"reset\" || msg.payload === false || msg.payload === 0) {\n    context.set(\"old\", 0); // Explicitly overwrite the memory\n    msg.payload = 0;\n    return msg;\n}\n\n// 4. If not a reset, try to treat it as a number\nlet incomingValue = Number(msg.payload);\n\nif (!isNaN(incomingValue)) {\n    let newValue = old + incomingValue;\n    context.set(\"old\", newValue); // Save new total\n    msg.payload = newValue;\n} else {\n    node.warn(\"Ignored non-numeric input: \" + msg.payload);\n}\n\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 820,
-        "y": 1980,
-        "wires": [
-            [
-                "723d7302b58bf84c",
-                "12e0e2836aca0936",
-                "77954dcf84c42cb0"
-            ]
-        ]
-    },
-    {
-        "id": "f7d5780222f50b5e",
-        "type": "function",
-        "z": "3d6956ce1d3472bd",
-        "name": "function 4",
-        "func": "msg.payload = msg.payload + \"\\n\";\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 820,
-        "y": 1880,
-        "wires": [
-            [
-                "26a08b4a0c49d4e3"
-            ]
-        ]
-    },
-    {
-        "id": "0ae0ee02db8976e9",
-        "type": "debug",
-        "z": "3d6956ce1d3472bd",
-        "name": "debug 5",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "false",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1120,
-        "y": 1560,
-        "wires": []
-    },
-    {
-        "id": "500cb83cfaa7b09f",
+        "id": "128693c712456d2a",
         "type": "delay",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "",
         "pauseType": "delay",
         "timeout": "2",
@@ -495,20 +77,438 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 780,
-        "y": 1500,
+        "x": 815,
+        "y": 959,
         "wires": [
             [
-                "c1cb731fa07b1a9a",
-                "0ae0ee02db8976e9",
-                "383a80dee8da9b9e"
+                "0bfed6d0848d6b31",
+                "35e2cdb98e5ef470",
+                "53c8ee6373fba9aa"
             ]
         ]
     },
     {
-        "id": "383a80dee8da9b9e",
+        "id": "e8966be588b11bd1",
+        "type": "delay",
+        "z": "37b7a5f1c787832d",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 775,
+        "y": 599,
+        "wires": [
+            [
+                "35e2cdb98e5ef470",
+                "cda335b72ad518e8",
+                "826efc9e3c4bd04c"
+            ]
+        ]
+    },
+    {
+        "id": "c09609819b3b9dfd",
+        "type": "delay",
+        "z": "37b7a5f1c787832d",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 755,
+        "y": 459,
+        "wires": [
+            [
+                "35e2cdb98e5ef470",
+                "c743017157415ac4",
+                "59fd7b4b8dbc956e",
+                "826efc9e3c4bd04c"
+            ]
+        ]
+    },
+    {
+        "id": "c743017157415ac4",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit 'C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\1-05. Cycles.mp3'\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 1505,
+        "y": 399,
+        "wires": [
+            [
+                "96438a12e95b0991"
+            ],
+            [
+                "96438a12e95b0991"
+            ],
+            [
+                "0023325aae6d4e8f"
+            ]
+        ]
+    },
+    {
+        "id": "cda335b72ad518e8",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit 'C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\3-05. Electroman Adventures.mp3'\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 1555,
+        "y": 539,
+        "wires": [
+            [],
+            [
+                "96438a12e95b0991",
+                "7e58b1f28dac135d"
+            ],
+            [
+                "0023325aae6d4e8f"
+            ]
+        ]
+    },
+    {
+        "id": "96438a12e95b0991",
+        "type": "debug",
+        "z": "37b7a5f1c787832d",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 2335,
+        "y": 639,
+        "wires": []
+    },
+    {
+        "id": "490603b8f4a5fbb9",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit 'C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\5-03. Geometrical Dominator.mp3'\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 1555,
+        "y": 699,
+        "wires": [
+            [],
+            [
+                "96438a12e95b0991"
+            ],
+            [
+                "0023325aae6d4e8f"
+            ]
+        ]
+    },
+    {
+        "id": "53c8ee6373fba9aa",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit '\"C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\4-09. Hexagon Force.mp3\"'\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 1555,
+        "y": 899,
+        "wires": [
+            [],
+            [
+                "96438a12e95b0991"
+            ],
+            [
+                "0023325aae6d4e8f"
+            ]
+        ]
+    },
+    {
+        "id": "0a293099a63d8dd0",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 1290,
+        "y": 1020,
+        "wires": [
+            [],
+            [
+                "96438a12e95b0991"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "fd2de42c9981e04d",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 630,
+        "y": 360,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "0f9ed785be7eb2fd",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 590,
+        "y": 540,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "452bd337eb84c084",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 590,
+        "y": 700,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "6dddfb47b29d4391",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 550,
+        "y": 860,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "15b4a15251d6c0fd",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"Stop-Process -Name 'vlc' -Force -ErrorAction SilentlyContinue\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 570,
+        "y": 1160,
+        "wires": [
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "7decb6888a7701ce",
+        "type": "exec",
+        "z": "37b7a5f1c787832d",
+        "command": "powershell.exe -c \"& 'C:\\Program Files\\VideoLAN\\VLC\\vlc.exe' --intf dummy --play-and-exit 'C:\\Users\\Matt\\Desktop\\yolopose\\GeometryDash\\Electrodynamix.mp3'\"",
+        "addpay": "",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": false,
+        "oldrc": false,
+        "name": "",
+        "x": 1555,
+        "y": 1199,
+        "wires": [
+            [],
+            [
+                "96438a12e95b0991"
+            ],
+            [
+                "0023325aae6d4e8f"
+            ]
+        ]
+    },
+    {
+        "id": "afd433fc5b548adc",
+        "type": "debug",
+        "z": "37b7a5f1c787832d",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 960,
+        "y": 1740,
+        "wires": []
+    },
+    {
+        "id": "1e9902d4ffa42264",
         "type": "function",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
+        "name": "function 1",
+        "func": "// 1. Get the stored value (ensure it's a number)\nlet old = context.get(\"old\") || 0;\n\n// 2. Normalize the input to a string for comparison\nlet inputStr = String(msg.payload).toLowerCase().trim();\n\n// 3. Check for Reset/Off triggers first\nif (inputStr === \"off\" || inputStr === \"reset\" || msg.payload === false || msg.payload === 0) {\n    context.set(\"old\", 0); // Explicitly overwrite the memory\n    msg.payload = 0;\n    return msg;\n}\n\n// 4. If not a reset, try to treat it as a number\nlet incomingValue = Number(msg.payload);\n\nif (!isNaN(incomingValue)) {\n    let newValue = old + incomingValue;\n    context.set(\"old\", newValue); // Save new total\n    msg.payload = newValue;\n} else {\n    node.warn(\"Ignored non-numeric input: \" + msg.payload);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 1740,
+        "wires": [
+            [
+                "afd433fc5b548adc",
+                "b38081ed16302ed2",
+                "cb22072cd1b3997f"
+            ]
+        ]
+    },
+    {
+        "id": "7e718a6ba8e0a92c",
+        "type": "function",
+        "z": "37b7a5f1c787832d",
+        "name": "function 4",
+        "func": "msg.payload = msg.payload + \"\\n\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 1640,
+        "wires": [
+            [
+                "1e9902d4ffa42264"
+            ]
+        ]
+    },
+    {
+        "id": "d89066d60988743f",
+        "type": "debug",
+        "z": "37b7a5f1c787832d",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1080,
+        "y": 1320,
+        "wires": []
+    },
+    {
+        "id": "f4d374750076635e",
+        "type": "delay",
+        "z": "37b7a5f1c787832d",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 740,
+        "y": 1260,
+        "wires": [
+            [
+                "7decb6888a7701ce",
+                "d89066d60988743f",
+                "826efc9e3c4bd04c"
+            ]
+        ]
+    },
+    {
+        "id": "826efc9e3c4bd04c",
+        "type": "function",
+        "z": "37b7a5f1c787832d",
         "name": "function 2",
         "func": "msg.payload = msg.payload + \"\\n\";\nreturn msg;",
         "outputs": 1,
@@ -517,18 +517,18 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1120,
-        "y": 1200,
+        "x": 1080,
+        "y": 960,
         "wires": [
             [
-                "5c9d0acdf48bb7d5"
+                "0bfed6d0848d6b31"
             ]
         ]
     },
     {
-        "id": "947469baa602e0a3",
+        "id": "a0aeb1a1cc2330ea",
         "type": "function",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "function 3",
         "func": "// 1. Pull the stored values from memory\nlet songPath = flow.get(\"currentSongPath\");\nlet bpmValue = flow.get(\"currentBPM\");\n\n// 2. Validation\nif (!songPath || !bpmValue) {\n    node.warn(\"Missing BPM or Song Path!\");\n    return null;\n}\n\n// 3. Rate limiting (3 second cooldown)\nlet now = Date.now();\nlet lastSent = context.get('lastSent') || 0;\nif (now - lastSent < 3000) return null;\ncontext.set('lastSent', now);\n\n// 4. Prepare Message 1: The Music (PowerShell)\nlet escapedPath = songPath.replace(/\\\\/g, \"\\\\\\\\\");\nconst vlcPath = \"C:\\\\Program Files\\\\VideoLAN\\\\VLC\\\\vlc.exe\";\nlet musicMsg = {\n    payload: `-c \"& '${vlcPath}' --intf dummy --play-and-exit '${escapedPath}'\"`\n};\n\n// 5. Prepare Message 2: The Hardware (Arduino)\n// We add a newline (\\n) so the Arduino knows the number ended\nlet arduinoMsg = {\n    payload: bpmValue.toString() + \"\\n\"\n};\n\n// 6. Return both messages\n// Message 1 goes to the first output, Message 2 to the second\nreturn [musicMsg, arduinoMsg];",
         "outputs": 2,
@@ -537,21 +537,21 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1140,
-        "y": 2260,
+        "x": 1100,
+        "y": 2020,
         "wires": [
             [
-                "ae0c5364f847437a"
+                "eb94e1e29998f02a"
             ],
             [
-                "383a80dee8da9b9e"
+                "826efc9e3c4bd04c"
             ]
         ]
     },
     {
-        "id": "ae0c5364f847437a",
+        "id": "eb94e1e29998f02a",
         "type": "exec",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "command": "powershell.exe",
         "addpay": "payload",
         "append": "",
@@ -560,8 +560,8 @@
         "winHide": false,
         "oldrc": false,
         "name": "",
-        "x": 1340,
-        "y": 2200,
+        "x": 1300,
+        "y": 1960,
         "wires": [
             [],
             [],
@@ -569,9 +569,9 @@
         ]
     },
     {
-        "id": "d57119dd10fab286",
+        "id": "fa26851b6c3dc360",
         "type": "change",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "",
         "rules": [
             {
@@ -587,18 +587,18 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 870,
-        "y": 2220,
+        "x": 830,
+        "y": 1980,
         "wires": [
             [
-                "d0b76b58622f3c7c"
+                "be0acc137c14e6a3"
             ]
         ]
     },
     {
-        "id": "603083071e4c3996",
+        "id": "ffd9acb6aa96051f",
         "type": "change",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "",
         "rules": [
             {
@@ -614,16 +614,16 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 840,
-        "y": 2300,
+        "x": 800,
+        "y": 2060,
         "wires": [
             []
         ]
     },
     {
-        "id": "d0b76b58622f3c7c",
+        "id": "be0acc137c14e6a3",
         "type": "debug",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "debug 6",
         "active": true,
         "tosidebar": true,
@@ -632,14 +632,14 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1060,
-        "y": 2220,
+        "x": 1020,
+        "y": 1980,
         "wires": []
     },
     {
-        "id": "cb2a7c87891e3500",
+        "id": "79b7762d7f7dac41",
         "type": "exec",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "command": "python3",
         "addpay": "payload",
         "append": "C:\\Users\\Matt\\Desktop\\yolopose\\temp\\pose.py",
@@ -648,24 +648,24 @@
         "winHide": false,
         "oldrc": false,
         "name": "",
-        "x": 860,
-        "y": 2380,
+        "x": 820,
+        "y": 2140,
         "wires": [
             [
-                "c62c14b3fc39472e"
+                "d203af68b3bc0d79"
             ],
             [
-                "c62c14b3fc39472e"
+                "d203af68b3bc0d79"
             ],
             [
-                "c62c14b3fc39472e"
+                "d203af68b3bc0d79"
             ]
         ]
     },
     {
-        "id": "750b08d6b2076d10",
+        "id": "0023325aae6d4e8f",
         "type": "change",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "",
         "rules": [
             {
@@ -681,66 +681,66 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 900,
-        "y": 1300,
+        "x": 860,
+        "y": 1060,
         "wires": [
             [
-                "383a80dee8da9b9e"
+                "826efc9e3c4bd04c"
             ]
         ]
     },
     {
-        "id": "886ade9217737708",
+        "id": "2107279595b4eb5d",
         "type": "serial in",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "Arduino Nano",
         "serial": "32343da25e511ef2",
-        "x": 170,
-        "y": 300,
+        "x": 130,
+        "y": 60,
         "wires": [
             [
-                "55b291bfb25179d8"
+                "1eb68bedd4b9ad01"
             ]
         ]
     },
     {
-        "id": "2e6d6cdf23ce01a4",
+        "id": "79092921fd1c0363",
         "type": "serial in",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "score",
         "serial": "32343da25e511ef2",
-        "x": 610,
-        "y": 1980,
+        "x": 570,
+        "y": 1740,
         "wires": [
             [
-                "26a08b4a0c49d4e3"
+                "1e9902d4ffa42264"
             ]
         ]
     },
     {
-        "id": "5c9d0acdf48bb7d5",
+        "id": "0bfed6d0848d6b31",
         "type": "serial out",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "hexagon send",
         "serial": "32343da25e511ef2",
-        "x": 1400,
-        "y": 1200,
+        "x": 1360,
+        "y": 960,
         "wires": []
     },
     {
-        "id": "ba65b68f1e4ffae8",
+        "id": "59fd7b4b8dbc956e",
         "type": "serial out",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "cycles send",
         "serial": "32343da25e511ef2",
-        "x": 1085,
-        "y": 699,
+        "x": 1045,
+        "y": 459,
         "wires": []
     },
     {
-        "id": "c2ed6535d4d4ee7e",
+        "id": "f43a0c00760d6cc3",
         "type": "ui-text-input",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "89d90dc6e863f318",
         "name": "custom",
         "label": "Absolute PATH to song",
@@ -762,18 +762,18 @@
         "icon": "",
         "iconPosition": "left",
         "iconInnerPosition": "inside",
-        "x": 660,
-        "y": 2220,
+        "x": 620,
+        "y": 1980,
         "wires": [
             [
-                "d57119dd10fab286"
+                "fa26851b6c3dc360"
             ]
         ]
     },
     {
-        "id": "0d94b414e6309727",
+        "id": "e6c62fc2ec46b02f",
         "type": "ui-text-input",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "89d90dc6e863f318",
         "name": "bpm",
         "label": "BPM of song",
@@ -795,18 +795,18 @@
         "icon": "",
         "iconPosition": "left",
         "iconInnerPosition": "inside",
-        "x": 650,
-        "y": 2300,
+        "x": 610,
+        "y": 2060,
         "wires": [
             [
-                "603083071e4c3996"
+                "ffd9acb6aa96051f"
             ]
         ]
     },
     {
-        "id": "454687caea99c476",
+        "id": "d7b073a2248e7cfe",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "89d90dc6e863f318",
         "name": "cycles",
         "label": "Cycles (DJVI)",
@@ -834,19 +834,19 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 290,
-        "y": 660,
+        "x": 250,
+        "y": 420,
         "wires": [
             [
-                "f396604cc53e4808",
-                "7eab47ee399b1e13"
+                "c09609819b3b9dfd",
+                "fd2de42c9981e04d"
             ]
         ]
     },
     {
-        "id": "807a5eeb5c23faba",
+        "id": "3351d80266b757cf",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "89d90dc6e863f318",
         "name": "hexagon force",
         "label": "Hexagon Force (Waterflame)",
@@ -874,19 +874,19 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 575,
-        "y": 1199,
+        "x": 535,
+        "y": 959,
         "wires": [
             [
-                "13eb7ef3c57f73fb",
-                "7dbd4dbcc391eb31"
+                "128693c712456d2a",
+                "6dddfb47b29d4391"
             ]
         ]
     },
     {
-        "id": "9da574c2b232ac65",
+        "id": "d2f49a00d8cd3ecc",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "89d90dc6e863f318",
         "name": "geometrical dominator",
         "label": "Geometrical dominator (Waterflame)",
@@ -914,19 +914,19 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 570,
-        "y": 1023,
+        "x": 530,
+        "y": 783,
         "wires": [
             [
-                "20621e1f8cb75757",
-                "1c2d47a1ca00983f"
+                "4f11e4a64f7ea6d2",
+                "452bd337eb84c084"
             ]
         ]
     },
     {
-        "id": "e2d806ac7380a90d",
+        "id": "39cf603f77d93f68",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "89d90dc6e863f318",
         "name": "electroman adventures",
         "label": "Electroman Adventures (Waterflame)",
@@ -954,19 +954,19 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 560,
-        "y": 840,
+        "x": 520,
+        "y": 600,
         "wires": [
             [
-                "9c008c5a696252db",
-                "c5ec1bef0cf0a469"
+                "e8966be588b11bd1",
+                "0f9ed785be7eb2fd"
             ]
         ]
     },
     {
-        "id": "b900e40e1c8f067c",
+        "id": "ab3fea9416ab8d34",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "89d90dc6e863f318",
         "name": "off",
         "label": "Off",
@@ -994,20 +994,20 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 545,
-        "y": 1319,
+        "x": 505,
+        "y": 1079,
         "wires": [
             [
-                "f75e55de42f1deec",
-                "f7d5780222f50b5e",
-                "383a80dee8da9b9e"
+                "0a293099a63d8dd0",
+                "7e718a6ba8e0a92c",
+                "826efc9e3c4bd04c"
             ]
         ]
     },
     {
-        "id": "26dbbaf95682fba0",
+        "id": "17a27495bc07ec48",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "89d90dc6e863f318",
         "name": "electrodynamix",
         "label": "Electrodynamix (DJ Nate)",
@@ -1035,19 +1035,19 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 595,
-        "y": 1499,
+        "x": 555,
+        "y": 1259,
         "wires": [
             [
-                "b2fbbf0dcfc72646",
-                "500cb83cfaa7b09f"
+                "15b4a15251d6c0fd",
+                "f4d374750076635e"
             ]
         ]
     },
     {
-        "id": "05ef78664b826bfa",
+        "id": "3fde6edb4fdea02c",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "75f9376adbc0df51",
         "name": "Free",
         "label": "Free Play mode",
@@ -1075,22 +1075,22 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 570,
-        "y": 1640,
+        "x": 530,
+        "y": 1400,
         "wires": [
             [
-                "383a80dee8da9b9e"
+                "826efc9e3c4bd04c"
             ]
         ]
     },
     {
-        "id": "447f9cfdcbd60e58",
+        "id": "b464fbd9a32edb6c",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "75f9376adbc0df51",
         "name": "Run",
         "label": "Run LEDs",
-        "order": 2,
+        "order": 5,
         "width": 0,
         "height": 0,
         "emulateClick": false,
@@ -1114,22 +1114,22 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 570,
-        "y": 1720,
+        "x": 530,
+        "y": 1480,
         "wires": [
             [
-                "383a80dee8da9b9e"
+                "826efc9e3c4bd04c"
             ]
         ]
     },
     {
-        "id": "70be72da9dbd298d",
+        "id": "7e58b1f28dac135d",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "75f9376adbc0df51",
         "name": "Off",
         "label": "Off",
-        "order": 3,
+        "order": 2,
         "width": 0,
         "height": 0,
         "emulateClick": false,
@@ -1153,19 +1153,19 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 590,
-        "y": 1880,
+        "x": 550,
+        "y": 1640,
         "wires": [
             [
-                "f7d5780222f50b5e",
-                "383a80dee8da9b9e"
+                "7e718a6ba8e0a92c",
+                "826efc9e3c4bd04c"
             ]
         ]
     },
     {
-        "id": "aef0ed5ed4fbc7cb",
+        "id": "721ab411bb81f9a3",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "75f9376adbc0df51",
         "name": "Random Game",
         "label": "Random Game",
@@ -1193,18 +1193,18 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 610,
-        "y": 1764,
+        "x": 570,
+        "y": 1524,
         "wires": [
             [
-                "383a80dee8da9b9e"
+                "826efc9e3c4bd04c"
             ]
         ]
     },
     {
-        "id": "5b78f5ac9e531304",
+        "id": "5db70dfce20bc614",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "89d90dc6e863f318",
         "name": "Play",
         "label": "Play!",
@@ -1232,21 +1232,156 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 990,
-        "y": 2260,
+        "x": 950,
+        "y": 2020,
         "wires": [
             [
-                "947469baa602e0a3"
+                "a0aeb1a1cc2330ea"
             ]
         ]
     },
     {
-        "id": "8c49aec34b292b2f",
+        "id": "3e55e5cdc0e84f92",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
-        "group": "1cadfd801caa3215",
+        "z": "37b7a5f1c787832d",
+        "group": "89d90dc6e863f318",
         "name": "ai mode",
         "label": "AI mode",
+        "order": 12,
+        "width": 0,
+        "height": 0,
+        "emulateClick": false,
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "iconPosition": "left",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "topic",
+        "topicType": "msg",
+        "buttonColor": "",
+        "textColor": "",
+        "iconColor": "",
+        "enableClick": true,
+        "enablePointerdown": false,
+        "pointerdownPayload": "",
+        "pointerdownPayloadType": "str",
+        "enablePointerup": false,
+        "pointerupPayload": "",
+        "pointerupPayloadType": "str",
+        "x": 640,
+        "y": 2140,
+        "wires": [
+            [
+                "79b7762d7f7dac41"
+            ]
+        ]
+    },
+    {
+        "id": "aa1a84cc934e9b27",
+        "type": "ui-text",
+        "z": "37b7a5f1c787832d",
+        "group": "1cadfd801caa3215",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "What would you like to do?",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": true,
+        "font": "",
+        "fontSize": "21",
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 160,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "0616b7af83d954b5",
+        "type": "ui-text",
+        "z": "37b7a5f1c787832d",
+        "group": "89d90dc6e863f318",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "select or create",
+        "label": "Select a song or create your own:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": true,
+        "font": "",
+        "fontSize": "30",
+        "color": "#717171",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 500,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "b38081ed16302ed2",
+        "type": "ui-text",
+        "z": "37b7a5f1c787832d",
+        "group": "75f9376adbc0df51",
+        "order": 3,
+        "width": 0,
+        "height": 0,
+        "name": "Score",
+        "label": "Score",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": true,
+        "font": "",
+        "fontSize": "30",
+        "color": "#00bfff",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 950,
+        "y": 1820,
+        "wires": []
+    },
+    {
+        "id": "cb22072cd1b3997f",
+        "type": "ui-text",
+        "z": "37b7a5f1c787832d",
+        "group": "89d90dc6e863f318",
+        "order": 11,
+        "width": 0,
+        "height": 0,
+        "name": "Score",
+        "label": "Score",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "style": true,
+        "font": "Helvetica, sans-serif",
+        "fontSize": "200",
+        "color": "#9900ff",
+        "wrapText": false,
+        "className": "",
+        "value": "payload",
+        "valueType": "msg",
+        "x": 950,
+        "y": 1880,
+        "wires": []
+    },
+    {
+        "id": "31f063fea2da56a6",
+        "type": "ui-button",
+        "z": "37b7a5f1c787832d",
+        "group": "1cadfd801caa3215",
+        "name": "proggress",
+        "label": "Update all time progress",
         "order": 2,
         "width": 0,
         "height": 0,
@@ -1271,153 +1406,18 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 680,
-        "y": 2380,
+        "x": 616.6666650772095,
+        "y": 2323.3333435058594,
         "wires": [
             [
-                "cb2a7c87891e3500"
+                "1ea30a3625cd06d9"
             ]
         ]
     },
     {
-        "id": "f9de7f811f441962",
-        "type": "ui-text",
-        "z": "3d6956ce1d3472bd",
-        "group": "1cadfd801caa3215",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "name": "",
-        "label": "What would you like to do?",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "style": true,
-        "font": "",
-        "fontSize": "21",
-        "color": "#717171",
-        "wrapText": false,
-        "className": "",
-        "value": "payload",
-        "valueType": "msg",
-        "x": 200,
-        "y": 440,
-        "wires": []
-    },
-    {
-        "id": "081327026c187b61",
-        "type": "ui-text",
-        "z": "3d6956ce1d3472bd",
-        "group": "89d90dc6e863f318",
-        "order": 1,
-        "width": 0,
-        "height": 0,
-        "name": "select or create",
-        "label": "Select a song or create your own:",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "style": true,
-        "font": "",
-        "fontSize": "30",
-        "color": "#717171",
-        "wrapText": false,
-        "className": "",
-        "value": "payload",
-        "valueType": "msg",
-        "x": 540,
-        "y": 440,
-        "wires": []
-    },
-    {
-        "id": "12e0e2836aca0936",
-        "type": "ui-text",
-        "z": "3d6956ce1d3472bd",
-        "group": "75f9376adbc0df51",
-        "order": 5,
-        "width": 0,
-        "height": 0,
-        "name": "Score",
-        "label": "Score",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "style": true,
-        "font": "",
-        "fontSize": "30",
-        "color": "#00bfff",
-        "wrapText": false,
-        "className": "",
-        "value": "payload",
-        "valueType": "msg",
-        "x": 990,
-        "y": 2060,
-        "wires": []
-    },
-    {
-        "id": "77954dcf84c42cb0",
-        "type": "ui-text",
-        "z": "3d6956ce1d3472bd",
-        "group": "89d90dc6e863f318",
-        "order": 11,
-        "width": 0,
-        "height": 0,
-        "name": "Score",
-        "label": "Score",
-        "format": "{{msg.payload}}",
-        "layout": "row-spread",
-        "style": true,
-        "font": "Helvetica, sans-serif",
-        "fontSize": "200",
-        "color": "#9900ff",
-        "wrapText": false,
-        "className": "",
-        "value": "payload",
-        "valueType": "msg",
-        "x": 990,
-        "y": 2120,
-        "wires": []
-    },
-    {
-        "id": "28109b4b3cc0b52c",
-        "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
-        "group": "1cadfd801caa3215",
-        "name": "proggress",
-        "label": "progress",
-        "order": 3,
-        "width": 0,
-        "height": 0,
-        "emulateClick": false,
-        "tooltip": "",
-        "color": "",
-        "bgcolor": "",
-        "className": "",
-        "icon": "",
-        "iconPosition": "left",
-        "payload": "",
-        "payloadType": "str",
-        "topic": "topic",
-        "topicType": "msg",
-        "buttonColor": "",
-        "textColor": "",
-        "iconColor": "",
-        "enableClick": true,
-        "enablePointerdown": false,
-        "pointerdownPayload": "",
-        "pointerdownPayloadType": "str",
-        "enablePointerup": false,
-        "pointerupPayload": "",
-        "pointerupPayloadType": "str",
-        "x": 400,
-        "y": 2520,
-        "wires": [
-            [
-                "d5f3ecee8f5f4730"
-            ]
-        ]
-    },
-    {
-        "id": "c86ecc5a2648ba30",
+        "id": "17430ecd160b41d6",
         "type": "function",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "Convert to Base64",
         "func": "// Check if payload exists and is a buffer\nif (Buffer.isBuffer(msg.payload)) {\n    // Convert the raw bytes to a clean Base64 string\n    var b64 = msg.payload.toString('base64');\n    // Add the header so the UI knows it's a PNG\n    msg.payload = \"data:image/png;base64,\" + b64;\n    return msg;\n} else {\n    node.error(\"Payload is not a Buffer! Check Read File node settings.\");\n    return null;\n}",
         "outputs": 1,
@@ -1426,23 +1426,23 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1150,
-        "y": 2560,
+        "x": 1370,
+        "y": 2340,
         "wires": [
             [
-                "display_image_node"
+                "ae16253151f17bf4"
             ]
         ]
     },
     {
-        "id": "display_image_node",
+        "id": "ae16253151f17bf4",
         "type": "ui-template",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "group": "1cadfd801caa3215",
         "page": "",
         "ui": "",
         "name": "Display Graph",
-        "order": 5,
+        "order": 3,
         "width": "8",
         "height": "6",
         "format": "<template>\n    <div class=\"image-container\">\n        <img :src=\"msg.payload\" v-if=\"msg.payload\">\n    </div>\n</template>\n\n<style>\n    /* This removes the scrollbars and forces the image to scale */\n    .image-container {\n        width: 100%;\n        height: 100%;\n        display: flex;\n        justify-content: center;\n        align-items: flex-start;\n        overflow: hidden; /* Prevents scrollbars */\n    }\n\n    .image-container img {\n        width: 100%;      /* Fits width of the widget */\n        height: auto;     /* Keeps the graph from looking 'squashed' */\n        max-height: 100%; /* Ensures it doesn't leak out the bottom */\n        object-fit: contain; \n    }\n</style>",
@@ -1450,16 +1450,16 @@
         "passthru": true,
         "templateScope": "local",
         "className": "",
-        "x": 1420,
-        "y": 2520,
+        "x": 1640,
+        "y": 2300,
         "wires": [
             []
         ]
     },
     {
-        "id": "d5f3ecee8f5f4730",
+        "id": "1ea30a3625cd06d9",
         "type": "file in",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "",
         "filename": "C:\\Users\\Matt\\Desktop\\yolopose\\temp\\historical_progress_graph.png",
         "filenameType": "str",
@@ -1468,18 +1468,18 @@
         "sendError": false,
         "encoding": "none",
         "allProps": false,
-        "x": 750,
-        "y": 2540,
+        "x": 966.6666650772095,
+        "y": 2343.3333435058594,
         "wires": [
             [
-                "c86ecc5a2648ba30"
+                "17430ecd160b41d6"
             ]
         ]
     },
     {
-        "id": "c62c14b3fc39472e",
+        "id": "d203af68b3bc0d79",
         "type": "debug",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "debug 8",
         "active": true,
         "tosidebar": true,
@@ -1488,14 +1488,14 @@
         "complete": "false",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1360,
-        "y": 2380,
+        "x": 1320,
+        "y": 2140,
         "wires": []
     },
     {
-        "id": "fea4559466504d9c",
+        "id": "9d260c2ea8b85f78",
         "type": "file",
-        "z": "3d6956ce1d3472bd",
+        "z": "37b7a5f1c787832d",
         "name": "",
         "filename": "C:/Users/Matt/Desktop/yolopose/temp/stop_signal.txt",
         "filenameType": "str",
@@ -1503,22 +1503,22 @@
         "createDir": false,
         "overwriteFile": "false",
         "encoding": "none",
-        "x": 1020,
-        "y": 2440,
+        "x": 980,
+        "y": 2200,
         "wires": [
             [
-                "c62c14b3fc39472e"
+                "d203af68b3bc0d79"
             ]
         ]
     },
     {
-        "id": "off_button_id",
+        "id": "8244b26f7e24b763",
         "type": "ui-button",
-        "z": "3d6956ce1d3472bd",
-        "group": "1cadfd801caa3215",
+        "z": "37b7a5f1c787832d",
+        "group": "89d90dc6e863f318",
         "name": "stop ai",
         "label": "AI Off",
-        "order": 4,
+        "order": 13,
         "width": 0,
         "height": 0,
         "emulateClick": false,
@@ -1539,12 +1539,36 @@
         "enablePointerup": false,
         "pointerupPayload": "",
         "pointerupPayloadType": "str",
-        "x": 670,
-        "y": 2440,
+        "x": 630,
+        "y": 2200,
         "wires": [
             [
-                "fea4559466504d9c"
+                "9d260c2ea8b85f78"
             ]
+        ]
+    },
+    {
+        "id": "03e0e5a9f8a0f0f2",
+        "type": "ui-template",
+        "z": "37b7a5f1c787832d",
+        "group": "89d90dc6e863f318",
+        "page": "",
+        "ui": "",
+        "name": "display video",
+        "order": 14,
+        "width": 0,
+        "height": 0,
+        "head": "",
+        "format": "<img src=\"http://localhost:5000/video_feed\">",
+        "storeOutMessages": true,
+        "passthru": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 1650,
+        "y": 2380,
+        "wires": [
+            []
         ]
     },
     {
@@ -1757,7 +1781,7 @@
         }
     },
     {
-        "id": "4e2ca29f2e6afcca",
+        "id": "cd4644570696b6e7",
         "type": "global-config",
         "env": [],
         "modules": {

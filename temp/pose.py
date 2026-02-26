@@ -38,42 +38,45 @@ app = Flask(__name__)
 # --- SHUTDOWN HANDLING ---
 def handle_shutdown(signum, frame):
     print("\nShutdown signal received. Closing AI and generating graph...")
+    save_and_plot()
     
-    # 1. Save individual punch data and show session graph
-    save_and_plot() 
-    
-    # 2. CALCULATE AND SAVE AVERAGES (The Bridge to process.py)
+    # Calculate averages and run process.py
+    run_final_processing()
+        
+    print("Exiting...")
+    os._exit(0)
+def run_final_processing():
+    # 1. Calculate and save averages to avg.txt and exvg.txt
     try:
-        # Calculate Speed Average
         if os.path.exists(save_path):
             with open(save_path, "r") as f:
                 velocities = [float(l.strip()) for l in f if l.strip()]
             if velocities:
-                avg_val = sum(velocities)/len(velocities)
                 with open(os.path.join(BASE_DIR, "avg.txt"), "a") as f_v:
-                    f_v.write(f"{avg_val:.2f}\n")
+                    f_v.write(f"{sum(velocities)/len(velocities):.2f}\n")
 
-        # Calculate Extension Average
         if os.path.exists(extend_path):
             with open(extend_path, "r") as f:
                 extensions = [float(l.strip()) for l in f if l.strip()]
             if extensions:
-                exvg_val = sum(extensions)/len(extensions)
                 with open(os.path.join(BASE_DIR, "exvg.txt"), "a") as f_e:
-                    f_e.write(f"{exvg_val:.2f}\n")
-        print("Averages successfully saved to avg.txt and exvg.txt")
+                    f_e.write(f"{sum(extensions)/len(extensions):.2f}\n")
+        print("Averages saved.")
     except Exception as e:
-        print(f"Error saving averages: {e}")
+        print(f"Average calc error: {e}")
 
-    # 3. Run the historical plotting script
+    # 2. THE FIX: Execute process.py using the FULL PATH
     try:
-        subprocess.run([sys.executable, "process.py"], check=True)
-        print("process.py finished.")
+        # This points exactly to C:\Users\Matt\Desktop\yolopose\temp\process.py
+        process_script = os.path.join(BASE_DIR, "process.py")
+        
+        print(f"Attempting to run process script at: {process_script}")
+        subprocess.run([sys.executable, process_script], check=True)
+        print("process.py finished successfully.")
     except Exception as e:
         print(f"process.py failed: {e}")
-        
-    print("Exiting...")
-    os._exit(0)
+
+# Ensure the finally block calls the new function
 
 signal.signal(signal.SIGTERM, handle_shutdown)
 signal.signal(signal.SIGINT, handle_shutdown)
@@ -217,9 +220,9 @@ if __name__ == '__main__':
     try:
         t = Thread(target=detection_loop, daemon=True)
         t.start()
-        print("Step 4: Server online at http://localhost:5000")
         app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
     except KeyboardInterrupt:
-        handle_shutdown(None, None)
+        pass
     finally:
+        run_final_processing()
         cap.release()
