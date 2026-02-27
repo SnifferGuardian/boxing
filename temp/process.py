@@ -2,8 +2,6 @@ import matplotlib.pyplot as plt
 import re
 import os
 
-# --- PATH CONFIGURATION ---
-# This ensures it always looks in the folder where the script is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def get_vals(filename):
@@ -20,11 +18,9 @@ def get_vals(filename):
         print(f"File {filename} not found at {full_path}")
     return vals
 
-# Retrieve data from the ledger files
 avg_vals = get_vals('avg.txt')
 exvg_vals = get_vals('exvg.txt')
 
-# Create the figure
 plt.figure("Historical Progress", figsize=(10, 10))
 fig, (ax1, ax2) = plt.subplots(2, 1, num="Historical Progress", figsize=(10, 10), sharex=True)
 plt.style.use('ggplot')
@@ -48,7 +44,6 @@ else:
 
 plt.tight_layout()
 
-# SAVE using the absolute path
 output_path = os.path.join(BASE_DIR, 'historical_progress_graph.png')
 plt.savefig(output_path)
 print(f"Graph saved to {output_path}")

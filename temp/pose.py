@@ -11,7 +11,7 @@ from threading import Thread
 from ultralytics import YOLO
 from flask import Flask, Response, send_file
 
-# --- INITIALIZATION & PATHS ---
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 save_path = os.path.join(BASE_DIR, "save.txt")
 extend_path = os.path.join(BASE_DIR, "extend.txt")
@@ -19,7 +19,6 @@ stop_signal_path = os.path.join(BASE_DIR, "stop_signal.txt")
 graph_path = os.path.join(BASE_DIR, "split_performance_graph.png")
 MODEL_PATH = os.path.join(BASE_DIR, "yolo11n-pose.engine")
 
-# Clear/Initialize session-specific files at launch
 for p in [save_path, extend_path]:
     with open(p, "w") as f:
         f.close()
@@ -27,7 +26,6 @@ for p in [save_path, extend_path]:
 if os.path.exists(stop_signal_path):
     os.remove(stop_signal_path)
 
-# Global Variables
 output_frame = None
 punch_data = [] 
 prev_rwrist = None 
@@ -35,18 +33,15 @@ prev_time = time.time()
 
 app = Flask(__name__)
 
-# --- SHUTDOWN HANDLING ---
 def handle_shutdown(signum, frame):
     print("\nShutdown signal received. Closing AI and generating graph...")
     save_and_plot()
     
-    # Calculate averages and run process.py
     run_final_processing()
         
     print("Exiting...")
     os._exit(0)
 def run_final_processing():
-    # 1. Calculate and save averages to avg.txt and exvg.txt
     try:
         if os.path.exists(save_path):
             with open(save_path, "r") as f:
@@ -65,9 +60,7 @@ def run_final_processing():
     except Exception as e:
         print(f"Average calc error: {e}")
 
-    # 2. THE FIX: Execute process.py using the FULL PATH
     try:
-        # This points exactly to C:\Users\Matt\Desktop\yolopose\temp\process.py
         process_script = os.path.join(BASE_DIR, "process.py")
         
         print(f"Attempting to run process script at: {process_script}")
@@ -76,7 +69,6 @@ def run_final_processing():
     except Exception as e:
         print(f"process.py failed: {e}")
 
-# Ensure the finally block calls the new function
 
 signal.signal(signal.SIGTERM, handle_shutdown)
 signal.signal(signal.SIGINT, handle_shutdown)
@@ -163,7 +155,7 @@ def index():
             img { border: 4px solid #00ff00; border-radius: 10px; width: 80%; max-width: 800px; }
         </style></head>
         <body>
-            <h1>🥊 Boxing AI Live Stream</h1>
+            <h1>Boxing AI Live Stream</h1>
             <img src="/video_feed">
             <p>Session Active. Press STOP to view graphs.</p>
         </body>
