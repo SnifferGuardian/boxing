@@ -44,7 +44,12 @@ else:
 
 plt.tight_layout()
 
-output_path = os.path.join(BASE_DIR, 'historical_progress_graph.png')
+# Updated saving logic:
+# Navigate one directory up ('..') and then into the 'assets' folder
+target_dir = os.path.abspath(os.path.join(BASE_DIR, '..', 'assets'))
+os.makedirs(target_dir, exist_ok=True) # Ensures the folder exists
+output_path = os.path.join(target_dir, 'historical_progress_graph.png')
+
 plt.savefig(output_path)
 print(f"Graph saved to {output_path}")
 plt.show()

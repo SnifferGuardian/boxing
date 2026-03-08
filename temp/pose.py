@@ -7,10 +7,7 @@ import math
 import pandas as pd
 import matplotlib.pyplot as plt
 import signal
-from threading import Thread
 from ultralytics import YOLO
-from flask import Flask, Response, send_file
-
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 save_path = os.path.join(BASE_DIR, "save.txt")
@@ -26,21 +23,10 @@ for p in [save_path, extend_path]:
 if os.path.exists(stop_signal_path):
     os.remove(stop_signal_path)
 
-output_frame = None
 punch_data = [] 
 prev_rwrist = None 
 prev_time = time.time() 
 
-app = Flask(__name__)
-
-def handle_shutdown(signum, frame):
-    print("\nShutdown signal received. Closing AI and generating graph...")
-    save_and_plot()
-    
-    run_final_processing()
-        
-    print("Exiting...")
-    os._exit(0)
 def run_final_processing():
     try:
         if os.path.exists(save_path):
@@ -62,123 +48,11 @@ def run_final_processing():
 
     try:
         process_script = os.path.join(BASE_DIR, "process.py")
-        
         print(f"Attempting to run process script at: {process_script}")
         subprocess.run([sys.executable, process_script], check=True)
         print("process.py finished successfully.")
     except Exception as e:
         print(f"process.py failed: {e}")
-
-
-signal.signal(signal.SIGTERM, handle_shutdown)
-signal.signal(signal.SIGINT, handle_shutdown)
-
-print("Initializing Camera...")
-cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-
-print(f"Loading AI Model from: {MODEL_PATH}")
-model = YOLO(MODEL_PATH, task="pose")
-
-def get_distance(p1, p2):
-    return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
-
-def detection_loop():
-    global punch_data, output_frame, prev_rwrist, prev_time
-    
-    while True:
-        if os.path.exists(stop_signal_path):
-            print(f"Stop signal found. Punches recorded: {len(punch_data)}")
-            os.remove(stop_signal_path)
-            handle_shutdown(None, None)
-            break            
-
-        success, frame = cap.read()
-        if not success: 
-            continue
-
-        frame = cv2.flip(frame, 1)
-        curr_time = time.time()
-        dt = curr_time - prev_time
-        
-        results = model.predict(frame, verbose=False, half=True, imgsz=640)
-        annotated_frame = results[0].plot()
-
-        if results[0].keypoints is not None and len(results[0].keypoints.data) > 0:
-            kpts = results[0].keypoints.data[0]
-            try:
-                r_shoulder = (kpts[6][0].item(), kpts[6][1].item())
-                r_wrist = (kpts[10][0].item(), kpts[10][1].item())
-                conf = kpts[10][2].item()
-
-                if conf > 0.5:
-                    extension = get_distance(r_shoulder, r_wrist)
-                    velocity = 0
-                    if prev_rwrist is not None and dt > 0:
-                        dist_moved = get_distance(r_wrist, prev_rwrist)
-                        velocity = dist_moved / dt
-                    
-                    prev_rwrist = r_wrist
-                    prev_time = curr_time
-
-                    if velocity > 500:
-                        punch_data.append([curr_time, velocity, extension])
-                        with open(save_path, "a") as f: 
-                            f.write(f"{velocity:.2f}\n")
-                        with open(extend_path, "a") as f: 
-                            f.write(f"{extension:.2f}\n")
-                        
-                        cv2.putText(annotated_frame, "PUNCH DETECTED!", (200, 450), 
-                                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
-
-                    cv2.putText(annotated_frame, f"Extension: {int(extension)}px", (20, 80), 
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-            except Exception as e:
-                pass
-
-        inf_ms = results[0].speed['inference']
-        fps = 1000/inf_ms if inf_ms > 0 else 0
-        cv2.putText(annotated_frame, f"AI FPS: {int(fps)}", (20, 40), 
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
-
-        ret, buffer = cv2.imencode('.jpg', annotated_frame)
-        if ret:
-            output_frame = buffer.tobytes()
-
-@app.route('/')
-def index():
-    return """
-    <html>
-        <head><title>Punch AI</title><style>
-            body { background: #121212; color: white; text-align: center; font-family: sans-serif; }
-            img { border: 4px solid #00ff00; border-radius: 10px; width: 80%; max-width: 800px; }
-        </style></head>
-        <body>
-            <h1>Boxing AI Live Stream</h1>
-            <img src="/video_feed">
-            <p>Session Active. Press STOP to view graphs.</p>
-        </body>
-    </html>
-    """
-
-def generate():
-    global output_frame
-    while True:
-        if output_frame is not None:
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + output_frame + b'\r\n')
-        time.sleep(0.03)
-
-@app.route('/video_feed')
-def video_feed():
-    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@app.route('/get_graph')
-def get_graph():
-    if os.path.exists(graph_path):
-        return send_file(graph_path, mimetype='image/png')
-    return "Graph not ready", 404
 
 def save_and_plot():
     if not punch_data:
@@ -206,15 +80,91 @@ def save_and_plot():
     plt.tight_layout()
     plt.savefig(graph_path) 
     print("Opening Session Graph Window...")
-    plt.show() 
+    plt.show()
 
-if __name__ == '__main__':
+def get_distance(p1, p2):
+    return math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+
+def main():
+    global punch_data, prev_rwrist, prev_time
+    
+    print("Initializing Camera...")
+    # Inside your main() function, before the while loop:
+    cv2.namedWindow("Boxing AI Live Stream", cv2.WINDOW_NORMAL) # Create the window
+    cv2.setWindowProperty("Boxing AI Live Stream", cv2.WND_PROP_TOPMOST, 1) # Now this works
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+    print(f"Loading AI Model from: {MODEL_PATH}")
+    model = YOLO(MODEL_PATH, task="pose")
+
     try:
-        t = Thread(target=detection_loop, daemon=True)
-        t.start()
-        app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
+        while True:
+            success, frame = cap.read()
+            if not success: 
+                break
+
+            frame = cv2.flip(frame, 1)
+            curr_time = time.time()
+            dt = curr_time - prev_time
+            
+            results = model.predict(frame, verbose=False, half=True, imgsz=640)
+            annotated_frame = results[0].plot()
+
+            if results[0].keypoints is not None and len(results[0].keypoints.data) > 0:
+                kpts = results[0].keypoints.data[0]
+                try:
+                    r_shoulder = (kpts[6][0].item(), kpts[6][1].item())
+                    r_wrist = (kpts[10][0].item(), kpts[10][1].item())
+                    conf = kpts[10][2].item()
+
+                    if conf > 0.5:
+                        extension = get_distance(r_shoulder, r_wrist)
+                        velocity = 0
+                        if prev_rwrist is not None and dt > 0:
+                            dist_moved = get_distance(r_wrist, prev_rwrist)
+                            velocity = dist_moved / dt
+                        
+                        prev_rwrist = r_wrist
+                        prev_time = curr_time
+
+                        if velocity > 500:
+                            punch_data.append([curr_time, velocity, extension])
+                            with open(save_path, "a") as f: 
+                                f.write(f"{velocity:.2f}\n")
+                            with open(extend_path, "a") as f: 
+                                f.write(f"{extension:.2f}\n")
+                            
+                            cv2.putText(annotated_frame, "PUNCH DETECTED!", (200, 450), 
+                                        cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 3)
+
+                        cv2.putText(annotated_frame, f"Extension: {int(extension)}px", (20, 80), 
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+                except Exception:
+                    pass
+
+            inf_ms = results[0].speed['inference']
+            fps = 1000/inf_ms if inf_ms > 0 else 0
+            cv2.putText(annotated_frame, f"AI FPS: {int(fps)}", (20, 40), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            cv2.putText(annotated_frame, "Press 'q' to Quit", (450, 40), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+
+            cv2.imshow("Boxing AI Live Stream", annotated_frame)
+
+            if cv2.waitKey(1) & 0xFF == ord('q') or os.path.exists(stop_signal_path):
+                break
+
     except KeyboardInterrupt:
         pass
     finally:
-        run_final_processing()
+        print("\nClosing AI and generating reports...")
         cap.release()
+        cv2.destroyAllWindows()
+        save_and_plot()
+        run_final_processing()
+        print("Exiting...")
+
+if __name__ == '__main__':
+    main()
