@@ -89,14 +89,14 @@ def main():
     global punch_data, prev_rwrist, prev_time
     
     print("Initializing Camera...")
-    # Inside your main() function, before the while loop:
-    cv2.namedWindow("Boxing AI Live Stream", cv2.WINDOW_NORMAL) # Create the window
-    cv2.setWindowProperty("Boxing AI Live Stream", cv2.WND_PROP_TOPMOST, 1) # Now this works
+    cv2.namedWindow("Boxing AI Live Stream", cv2.WINDOW_NORMAL) 
+    cv2.setWindowProperty("Boxing AI Live Stream", cv2.WND_PROP_TOPMOST, 1) 
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
     print(f"Loading AI Model from: {MODEL_PATH}")
+    #subprocess.run(["python", "temp/power_reaction_perc.py"])
     model = YOLO(MODEL_PATH, task="pose")
 
     try:
@@ -152,8 +152,9 @@ def main():
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
 
             cv2.imshow("Boxing AI Live Stream", annotated_frame)
-
-            if cv2.waitKey(1) & 0xFF == ord('q') or os.path.exists(stop_signal_path):
+            cv2.resizeWindow("Boxing AI Live Stream", 1000, 750)
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                # subprocess.Popen([sys.executable, "temp/power_reaction_perc.py"])
                 break
 
     except KeyboardInterrupt:
@@ -165,6 +166,8 @@ def main():
         save_and_plot()
         run_final_processing()
         print("Exiting...")
+        subprocess.run(["python", "temp/stop_ai.py"])
+    
 
 if __name__ == '__main__':
     main()

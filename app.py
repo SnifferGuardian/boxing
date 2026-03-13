@@ -1,37 +1,48 @@
-
-from asyncio import subprocess
 import os
-import threading
-import flet as ft
-import serial
 import time
-import flet_audio as fta
+import threading
+import asyncio
 from pathlib import Path
+
+import flet as ft
+import flet_audio as fta
+import serial
+import matplotlib.pyplot as plt
+import subprocess 
+import asyncio
+from asyncio import create_subprocess_exec 
+
+powerlist = []
+reactionlist = []
+script_dir = os.path.dirname(os.path.abspath(__file__))
+reaction_path = os.path.join(script_dir, "reaction.txt")
+power_path = os.path.join(script_dir, "power.txt")
+history_plot_path = os.path.join(script_dir, "history_report.png")
+stop_signal_path = os.path.join(script_dir, "temp/stop_signal.txt") 
+
+
 url = r"C:\Users\Matt\Desktop\yolopose\GeometryDash\1-05. Cycles.mp3"
 try:
-    # Open once at start. Ensure Arduino Serial Monitor is CLOSED.
     ser = serial.Serial('COM13', 9600, timeout=1) 
 except Exception as e:
     print(f"Serial Error: {e}")
     ser = None
 
-# Global elements for shared access
 bpm_input = ft.TextField(label="Enter BPM", width=100, visible=False)
 
 def change_bpm(e):
     if ser and bpm_input.value:
-        # Sends whatever is in the text box
         ser.write(f"{bpm_input.value}\n".encode())
 
 send_custom_btn = ft.ElevatedButton("Send BPM", on_click=change_bpm, visible=False)
 
 def main(page: ft.Page):
     page.title = "Rhythmic Box Controller"
-    # --- UI TEXT ELEMENTS ---
+    
     header_text = ft.Text("What do you want to do?", theme_style=ft.TextThemeStyle.DISPLAY_LARGE)
     selec_text = ft.Text("Select the ports used down below!", theme_style=ft.TextThemeStyle.DISPLAY_MEDIUM, visible=False)
     
-    # --- PORT SWITCHES ---
+    
     ports = [
         ft.Switch(label="Port 1", active_color=ft.Colors.GREEN, visible=False, value=False),
         ft.Switch(label="Port 2", active_color=ft.Colors.YELLOW, visible=False, value=False),
@@ -41,10 +52,9 @@ def main(page: ft.Page):
         ft.Switch(label="Port 6", active_color=ft.Colors.PINK, visible=False, value=False),
     ]
     async def check_audio_status(e):
-    # Check if the audio has finished playing
+   
         if e.state == "completed":
             print("Song finished! Stopping AI and generating results...")
-            # Path to the script that sends the stop signal
             stop_script = os.path.join(os.path.dirname(__file__), "stop_ai.py")
             await subprocess.create_subprocess_exec('python', stop_script)
 
@@ -60,7 +70,7 @@ def main(page: ft.Page):
         on_state_change=check_audio_status,
         on_seek_complete=lambda _: print("Seek complete"),
     )
-    # --- SERIAL FUNCTIONALITY ---
+    # funct for picking file but atp idc
     # async def handle_pick_files(e: ft.Event[ft.Button]):
     #     files = await ft.FilePicker().pick_files(allow_multiple=True)
     #     selected_files.value = (
@@ -78,25 +88,32 @@ def main(page: ft.Page):
     async def off_send(e):
         tracker.reset()
         if ser:
-            ser.write("off\n".encode())
+            ser.write("reset_ports\n".encode()) 
             ser.flush()
             await audio_off(e)
 
     async def send_inactive_ports(e):
-        await off_send(e)  # Reset all ports first
-        char_map = ["a", "b", "c", "d", "e", "f"]
-        
-        if ser and ser.is_open:
-            print("Syncing unselected ports...")
-            for index, p in enumerate(ports):
-                if not p.value:
-                    char_to_send = char_map[index]
-                    ser.write(f"{char_to_send}\n".encode())
-                    time.sleep(0.1)
-        else:
-            print("Serial port not available.")
+        if ser is None:
+            print("Error: No Arduino detected. Check your USB cable and COM port.")
+            return 
 
-    # --- NAVIGATION LOGIC ---
+        ser.write("reset_ports\n".encode())
+        ser.flush()
+        print("Arduino ports reset. Waiting for sync...")
+        
+        await asyncio.sleep(0.2) 
+    
+        char_map = ["a", "b", "c", "d", "e", "f"]
+    
+        for index, p in enumerate(ports):
+            if not p.value: 
+                msg = f"{char_map[index]}\n"
+                ser.write(msg.encode()) 
+                ser.flush()
+                print(f"Sent Disable command: {char_map[index]}")
+                await asyncio.sleep(0.1) 
+
+        print("Sync Complete.")
     def show_image(e):
         toggle_visibility(graph=True)
 
@@ -113,63 +130,68 @@ def main(page: ft.Page):
         toggle_visibility(main=True)
     async def cycles_play(e):
         tracker.reset()
-        await off_send(None)  # Ensure all ports are reset before starting the game
-        await subprocess.create_subprocess_exec('python', 'temp/pose.py')
+        await off_send(None)  
+        await create_subprocess_exec('python', 'temp/pose.py')
         time.sleep(0.2)
-        url= r"C:\Users\Matt\Desktop\yolopose\GeometryDash\1-05. Cycles.mp3"
-        bpm = 140  # Set your desired BPM here
+        url= r"GeometryDash\1-05. Cycles.mp3"
+        bpm = 140  
         if ser and ser.is_open:
-            ser.write(f"{bpm}\n".encode())  # Send BPM to Arduino
+            ser.write(f"{bpm}\n".encode())  
         audio.src = url
         await audio.play()
+        await power_calc()  
 
-        #await score(none)  # Start listening for score updates from Arduino
+        
     async def electroman_play(e):
-        await subprocess.create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'temp/pose.py')
         tracker.reset()
-        await off_send(None)  # Ensure all ports are reset before starting the game
+        await off_send(None) 
         time.sleep(0.2)
-        url = r"C:\Users\Matt\Desktop\yolopose\GeometryDash\3-05. Electroman Adventures.mp3"
-        bpm = 170  # Set your desired BPM here
+        url = r"GeometryDash\3-05. Electroman Adventures.mp3"
+        bpm = 170  
         if ser and ser.is_open:
-            ser.write(f"{bpm}\n".encode())  # Send BPM to Arduino
+            ser.write(f"{bpm}\n".encode())  
         audio.src = url
         await audio.play()
+        await power_calc()  
         #await score(none)
     async def geometrical_play(e):
-        await subprocess.create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'temp/pose.py')
         tracker.reset()
-        await off_send(None)  # Ensure all ports are reset before starting the game
+        await off_send(None)  
         time.sleep(0.2)
-        url = r"C:\Users\Matt\Desktop\yolopose\GeometryDash\5-03. Geometrical Dominator.mp3"
+        url = r"GeometryDash\5-03. Geometrical Dominator.mp3"
         bpm = 148  # Set your desired BPM here
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
+        await power_calc()  
         #await score(none)
     async def hexagon_play(e):
-        await subprocess.create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'temp/pose.py')
         tracker.reset()
-        await off_send(None)  # Ensure all ports are reset before starting the game
+        await off_send(None)
         time.sleep(0.2)
-        url = r"C:\Users\Matt\Desktop\yolopose\GeometryDash\4-09. Hexagon Force.mp3"
-        bpm = 81  # Set your desired BPM here
+        url = r"GeometryDash\4-09. Hexagon Force.mp3"
+        bpm = 81  
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
+        await power_calc()  
     async def electrodynamix_play(e):
-        await subprocess.create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'temp/pose.py')
         tracker.reset()
-        await off_send(None)  # Ensure all ports are reset before starting the game
+        await off_send(None)  
         time.sleep(0.2)
-        url = r"C:\Users\Matt\Desktop\yolopose\GeometryDash\Electrodynamix.mp3"
-        bpm = 127  # Set your desired BPM here
+        url = r"GeometryDash\Electrodynamix.mp3"
+        bpm = 127  
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
+        await power_calc()  
         #await score(none)
 
     def score():
@@ -179,12 +201,10 @@ def main(page: ft.Page):
                     line = ser.readline().decode('utf-8').strip()
                     if line:
                         tracker.update(line)
-                        # Optional: page.update() if you add a score label to the UI
                 except Exception as e:
                     print(f"Serial Read Error: {e}")
-            time.sleep(0.01) # Small sleep to prevent 100% CPU usage
+            time.sleep(0.01) 
 
-    # Start the background thread once when the app starts
     thread = threading.Thread(target=score, daemon=True)
     thread.start()
 
@@ -196,48 +216,62 @@ def main(page: ft.Page):
             print(f">>> RESET: Score is now {self.current_total}")
 
         def update(self, raw_input):
-            # 1. Clean the serial data (remove \n or \r characters)
             input_str = str(raw_input).lower().strip()
 
-            # 2. Check for Reset/Off triggers
             if input_str in ["off", "reset", "false", "0"]:
                 self.current_total = 0.0
-                print(f">>> RESET: Score is now {self.current_total}")
+                reactionlist.clear()
+                powerlist.clear()
+                print(f">>> RESET: Score and Lists cleared.")
                 return
 
-            # 3. Numeric Calculation
             try:
-                incoming_value = float(input_str)
-                self.current_total += incoming_value
-                print(f"Recv: {incoming_value} | Total Score: {self.current_total}")
+                parts = input_str.split(",") 
+                
+                incoming_reaction = int(parts[0])
+                
+                self.current_total += float(incoming_reaction)
+
+                if len(parts) == 2:
+                    incoming_power = int(parts[1])
+                    
+                    reactionlist.append(incoming_reaction)
+                    powerlist.append(incoming_power)
+                    
+                    print("-" * 67) 
+                    print(f"HIT")
+                    print(f"Reaction: {incoming_reaction} ms")
+                    print(f"Power:    {incoming_power}")
+                    print(f"Score: {self.current_total}")
+                    print("-" * 67) #676767676767
+
                 score_text.value = f"Score: {self.current_total}"
                 page.update()
-            except ValueError:
-                if input_str: # Ignore empty lines
-                    print(f"Warning: Ignored non-numeric serial data: '{input_str}'")
+
+            except (ValueError, IndexError):
+                if input_str: 
+                    print(f"Warning: Ignored non-numeric serial data: '{input_str}'")    
     tracker = ScoreTracker()
 
     def toggle_visibility(main=False, ports_view=False, graph=False, game_menu=False, rhythm_game=False):
-        # Handle Main Menu visibility
+       
         header_text.visible = main
         show_btn.visible = main
         port_btn.visible = main
         game_btn.visible = main
         off_btn.visible = main
         
-        # Handle Port Setup visibility
+        
         selec_text.visible = ports_view
         sync_btn.visible = ports_view
         for p in ports: p.visible = ports_view
         
-        # Handle Graph visibility
+        
         my_graph.visible = graph
         
-        # Handle Game Menu visibility
+        
         rhythmic_btn.visible = game_menu
         
-        # Handle Rhythmic Mode (BPM) visibility
-        #bpm_input.visible = rhythm_game
         send_custom_btn.visible = rhythm_game
 
         cycles_btn.visible = rhythm_game
@@ -246,14 +280,9 @@ def main(page: ft.Page):
         hexagon_btn.visible = rhythm_game
         electrodynamix_btn.visible = rhythm_game
         score_text.visible = rhythm_game
-        #audio_btn.visible = rhythm_game
-        
-        #selected_btn.visible = main
-        # Handle Global Back Button
         back_btn.visible = not main
         page.update()
 
-    # --- UI COMPONENTS ---
     my_graph = ft.Image(src="historical_progress_graph.png", visible=False, width=1200, height=900)
     
     show_btn = ft.ElevatedButton(content=ft.Text("📈 Show Graph", size=45), on_click=show_image, height=100, width=400)
@@ -290,5 +319,73 @@ def main(page: ft.Page):
         electrodynamix_btn,
         score_text,
     )
+
+
+
+
+
+
+
+
+
+
+    async def power_calc():
+        reactionlist.clear()
+        powerlist.clear()
+        print("Recording started... Data is being collected by the background thread.")
+
+        try:
+            while not os.path.exists(stop_signal_path):
+                await asyncio.sleep(0.5)  
+            
+            print("Stop signal detected! Processing results...")
+
+        except Exception as e:
+            print(f"Error in power_calc loop: {e}")
+
+        if len(reactionlist) > 0:
+            cur_avg_r = sum(reactionlist) / len(reactionlist)
+            cur_avg_p = sum(powerlist) / len(powerlist)
+
+            with open(reaction_path, 'a') as f1: f1.write(f"{cur_avg_r:.2f}\n")
+            with open(power_path, 'a') as f2: f2.write(f"{cur_avg_p:.2f}\n")
+
+            history_r = []
+            history_p = []
+            if os.path.exists(reaction_path):
+                with open(reaction_path, 'r') as f:
+                    history_r = [float(l.strip()) for l in f if l.strip()]
+            if os.path.exists(power_path):
+                with open(power_path, 'r') as f:
+                    history_p = [float(l.strip()) for l in f if l.strip()]
+
+            plt.style.use('ggplot')
+            
+            fig1, (ax1, ax2) = plt.subplots(2, 1, figsize=(9, 6))
+            fig1.canvas.manager.set_window_title('Current Session Data')
+            ax1.plot(reactionlist, color='tab:blue', label='Reaction Time')
+            ax1.axhline(y=cur_avg_r, color='navy', linestyle='--', label=f'Avg: {cur_avg_r:.1f}')
+            ax1.set_title("Short-Term: Current Session Reaction")
+            
+            ax2.plot(powerlist, color='tab:red', label='Power')
+            ax2.axhline(y=cur_avg_p, color='darkred', linestyle='--', label=f'Avg: {cur_avg_p:.1f}')
+            ax2.set_title("Short-Term: Current Session Power")
+            plt.tight_layout()
+
+            fig2, (ax3, ax4) = plt.subplots(2, 1, figsize=(9, 6))
+            fig2.canvas.manager.set_window_title('Historical Performance')
+            ax3.plot(history_r, color='blue', marker='o', label='Session Averages')
+            ax4.plot(history_p, color='red', marker='s', label='Session Averages')
+            plt.tight_layout()
+    
+            plt.savefig(history_plot_path)
+            print(f"Historical graph saved: {history_plot_path}")
+            
+            plt.show() 
+        else:
+            print("No data was collected during this session.")
+
+        if os.path.exists(stop_signal_path):
+            os.remove(stop_signal_path)
 
 ft.app(target=main)

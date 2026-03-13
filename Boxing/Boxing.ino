@@ -9,7 +9,7 @@ enum GameMode { IDLE, FREE_PLAY, RUN_SEQUENCE, RAND_GAME, ELECTRO };
 GameMode currentMode = IDLE;
 
 bool activeTargets[numSensors] = {false, false, false, false, false, false};
-bool portDisabled[numSensors] = {false, false, false, false, false, false}; // Track which ports to skip
+bool portDisabled[numSensors] = {false, false, false, false, false, false}; 
 unsigned long targetStartTimes[numSensors] = {0, 0, 0, 0, 0, 0};
 int targetDurations[numSensors] = {0, 0, 0, 0, 0, 0};
 bool targetWasHit[numSensors] = {false, false, false, false, false, false};
@@ -48,14 +48,13 @@ void loop() {
   }
 }
 
-// Logic: Picks a random pin but skips those in the portDisabled variable
 int randPin(){
   int pick; 
   int safety = 0;
   do {
     pick = random(1, 7); 
     safety++;
-    if (safety > 100) return 1; // Prevent freeze if all ports disabled
+    if (safety > 100) return 1; 
   } while (portDisabled[pick - 1]); 
   return pick;
 }
@@ -115,10 +114,14 @@ void blockingPunch(int peripheral, int duration) {
   digitalWrite(ledPins[idx], HIGH);
   while (millis() - startTime < (unsigned long)duration) {
     if (!hitDetected && analogRead(sensorPins[idx]) > threshold) {
+      int power = analogRead(sensorPins[idx]);
       hitDetected = true;
       digitalWrite(ledPins[idx], LOW);
-      int score = duration - (int)(millis() - startTime);
-      Serial.println(score);
+      long score = duration - (int)(millis() - startTime);
+      //Serial.println(score);
+      Serial.print(score);
+      Serial.print(",");
+      Serial.println(power);
     }
     listenSerial();
     if (currentMode == IDLE) break;
@@ -126,8 +129,12 @@ void blockingPunch(int peripheral, int duration) {
 
   if (!hitDetected) {
     digitalWrite(ledPins[idx], LOW);
-    int score = -30;
-    Serial.println(score);
+    long score = -30;
+    long power = 0;
+    //Serial.println(score);
+    Serial.print(score);
+    Serial.print(",");
+    Serial.println(power);
   }
 }
 
@@ -138,7 +145,7 @@ void updatePunchLogic() {
     if (!targetWasHit[i] && analogRead(sensorPins[i]) > threshold) {
       targetWasHit[i] = true;
       digitalWrite(ledPins[i], LOW);
-      int score = targetDurations[i] - (int)(now - targetStartTimes[i]);
+      float score = targetDurations[i] - (int)(now - targetStartTimes[i]);
       Serial.println(score);
     } 
     
@@ -159,16 +166,25 @@ void listenSerial() {
       inputBuffer.trim();
       if (inputBuffer.length() > 0) {
         
-        // Custom port logic for Python Flet integration
         if (inputBuffer == "reset_ports") {
            for(int i=0; i<numSensors; i++) portDisabled[i] = false;
+           Serial.println("state reset."); 
         }
-        else if (inputBuffer == "a") { portDisabled[0] = true; }
-        else if (inputBuffer == "b") { portDisabled[1] = true; }
-        else if (inputBuffer == "c") { portDisabled[2] = true; }
-        else if (inputBuffer == "d") { portDisabled[3] = true; }
-        else if (inputBuffer == "e") { portDisabled[4] = true; }
-        else if (inputBuffer == "f") { portDisabled[5] = true; }
+
+        else if (inputBuffer == "a") { portDisabled[0] = true; Serial.println("P1 Off"); }
+        else if (inputBuffer == "b") { portDisabled[1] = true; Serial.println("P2 Off"); }
+        else if (inputBuffer == "c") { portDisabled[2] = true; Serial.println("P3 Off"); }
+        else if (inputBuffer == "d") { portDisabled[3] = true; Serial.println("P4 Off"); }
+        else if (inputBuffer == "e") { portDisabled[4] = true; Serial.println("P5 Off"); }
+        else if (inputBuffer == "f") { portDisabled[5] = true; Serial.println("P6 Off"); }
+        
+        else if (inputBuffer == "off") {
+           resetGameState();
+           Serial.println("Rebooting...");
+           delay(100);
+           wdt_enable(WDTO_15MS); 
+           while(1);
+        }
         
         else {
           int numInput = inputBuffer.toInt();
@@ -180,37 +196,18 @@ void listenSerial() {
             resetGameState();
             Serial.print("BPM set to: "); Serial.println(electroBPM);
           }
-          else if (inputBuffer.indexOf("free") >= 0) {
-            resetGameState();
-            currentMode = FREE_PLAY;
-          } 
-          else if (inputBuffer.indexOf("electro") >= 0) {
-            resetGameState();
-            currentMode = ELECTRO;
-            lastElectroPulse = millis();
-          }
-          else if (inputBuffer.indexOf("rand") >= 0) {
-            resetGameState();
-            currentMode = RAND_GAME;
-          }
-          else if (inputBuffer.indexOf("run") >= 0) {
-            resetGameState();
-            currentMode = RUN_SEQUENCE;
-          }
-          else if (inputBuffer.indexOf("off") >= 0) {
-            resetGameState();
-            wdt_enable(WDTO_15MS);
-            while(1);
-          }
+          else if (inputBuffer.indexOf("free") >= 0) { resetGameState(); currentMode = FREE_PLAY; } 
+          else if (inputBuffer.indexOf("electro") >= 0) { resetGameState(); currentMode = ELECTRO; lastElectroPulse = millis(); }
+          else if (inputBuffer.indexOf("rand") >= 0) { resetGameState(); currentMode = RAND_GAME; }
+          else if (inputBuffer.indexOf("run") >= 0) { resetGameState(); currentMode = RUN_SEQUENCE; }
         }
-        inputBuffer = "";
+        inputBuffer = ""; 
       }
     } else {
       inputBuffer += c;
     }
   }
 }
-
 void resetGameState() {
   for (int i = 0; i < numSensors; i++) {
     digitalWrite(ledPins[i], LOW);
