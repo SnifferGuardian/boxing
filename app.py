@@ -230,7 +230,17 @@ def main(page: ft.Page):
 
     thread = threading.Thread(target=score, daemon=True)
     thread.start()
-
+    def delete_data(e):
+        with open("perc.txt", 'w') as f:
+            f.write("")
+        with open("reaction.txt", 'w') as f:
+            f.write("")
+        with open("power.txt", 'w') as f:
+            f.write("")
+        with open("temp/avg.txt", 'w') as f:
+            f.write("")
+        with open("temp/exvg.txt", 'w') as f:
+            f.write("")
     class ScoreTracker:
         def __init__(self):
             self.current_total = 0.0
@@ -310,6 +320,7 @@ def main(page: ft.Page):
         bpm_input.visible = rhythm_game
         tidalwave_btn.visible = rhythm_game
         amethyst_btn.visible = rhythm_game
+        delete_btn.visible = main
         page.update()
 
     my_graph = ft.Image(src="historical_progress_graph.png", visible=False, width=1200, height=900)
@@ -329,12 +340,14 @@ def main(page: ft.Page):
     tidalwave_btn = ft.ElevatedButton(content=ft.Text("Tidalwave", size=45), on_click=tidalwave_play, height=90, width=400)
     amethyst_btn = ft.ElevatedButton(content=ft.Text("Amethyst", size=45), on_click=amethyst_play, height=90, width=400)
     score_text = ft.Text(f"Score: {tracker.current_total}", size=135)
+    delete_btn = ft.ElevatedButton(content=ft.Text("Delete Data", size=45), on_click=delete_data, bgcolor=ft.Colors.BLACK, height=100, width=400)
     page.add(
         header_text, 
         show_btn, 
         port_btn, 
         game_btn, 
         off_btn, 
+        delete_btn,
         back_btn, 
         my_graph, 
         selec_text, 
