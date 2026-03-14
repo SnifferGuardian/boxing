@@ -267,8 +267,8 @@ def main(page: ft.Page):
                     print(f"Reaction: {incoming_reaction} ms")
                     print(f"Power:    {incoming_power}")
                     print(f"Score: {self.current_total}")
-                    print(powerlist)
-                    print(reactionlist)
+                    # print(powerlist)
+                    # print(reactionlist)
                     print("-" * 67) #676767676767
 
                 score_text.value = f"Score: {self.current_total}"
@@ -412,11 +412,11 @@ def main(page: ft.Page):
             fig1.canvas.manager.set_window_title('Current Session Data')
             ax1.plot(reactionlist, color='tab:blue', label='Reaction Time')
             ax1.axhline(y=cur_avg_r, color='navy', linestyle='--', label=f'Avg: {cur_avg_r:.1f}')
-            ax1.set_title("Short-Term: Current Session Reaction")
+            ax1.set_title("Current Session Reaction Time (Higher = Better)")
             
             ax2.plot(powerlist, color='tab:red', label='Power')
             ax2.axhline(y=cur_avg_p, color='darkred', linestyle='--', label=f'Avg: {cur_avg_p:.1f}')
-            ax2.set_title("Short-Term: Current Session Power")
+            ax2.set_title("Current Session Power (Higher = Better)")
             plt.tight_layout()
 
             # Create 3 subplots instead of 2
@@ -425,14 +425,14 @@ def main(page: ft.Page):
             
             # Existing Reaction/Power plots
             ax3.plot(history_r, color='blue', marker='o', label='Reaction Avg')
-            ax3.set_title("Historical Reaction Time")
+            ax3.set_title("Historical Reaction Time (Higher = Better)")
             
             ax4.plot(history_p, color='red', marker='s', label='Power Avg')
-            ax4.set_title("Historical Power")
+            ax4.set_title("Historical Power (Higher = Better)")
 
             # New Accuracy Percent plot
             ax5.plot(history_perc, color='green', marker='^', label='Accuracy %')
-            ax5.set_title("Percent of lights hit")
+            ax5.set_title("Percent of lights hit (%)")
             ax5.set_ylim(0, 105)  # Percentage is usually 0-100
             ax5.set_ylabel("Percentage (%)")
 
