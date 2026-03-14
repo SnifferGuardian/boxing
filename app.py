@@ -418,7 +418,8 @@ def main(page: ft.Page):
             if os.path.exists(power_path):
                 with open(power_path, 'r') as f:
                     history_p = [float(l.strip()) for l in f if l.strip()]
-
+            if os.path.exists("history_report.png"):
+                os.remove("history_report.png")
             plt.style.use('ggplot')
             
             fig1, (ax1, ax2) = plt.subplots(2, 1, figsize=(9, 6))
@@ -450,7 +451,6 @@ def main(page: ft.Page):
             plt.savefig(history_plot_path)
             plt.show()
     
-            plt.savefig(history_plot_path)
             print(f"Historical graph saved: {history_plot_path}")
             
             plt.show() 
