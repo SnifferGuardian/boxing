@@ -419,21 +419,18 @@ def main(page: ft.Page):
             ax2.set_title("Current Session Power (Higher = Better)")
             plt.tight_layout()
 
-            # Create 3 subplots instead of 2
             fig2, (ax3, ax4, ax5) = plt.subplots(3, 1, figsize=(9, 9))
             fig2.canvas.manager.set_window_title('Historical Performance')
             
-            # Existing Reaction/Power plots
             ax3.plot(history_r, color='blue', marker='o', label='Reaction Avg')
             ax3.set_title("Historical Reaction Time (Higher = Better)")
             
             ax4.plot(history_p, color='red', marker='s', label='Power Avg')
             ax4.set_title("Historical Power (Higher = Better)")
 
-            # New Accuracy Percent plot
             ax5.plot(history_perc, color='green', marker='^', label='Accuracy %')
             ax5.set_title("Percent of lights hit (%)")
-            ax5.set_ylim(0, 105)  # Percentage is usually 0-100
+            ax5.set_ylim(0, 105) 
             ax5.set_ylabel("Percentage (%)")
 
             plt.tight_layout()
