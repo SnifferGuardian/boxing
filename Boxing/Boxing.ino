@@ -55,7 +55,7 @@ int randPin(){
     pick = random(1, 7); 
     safety++;
     if (safety > 100) return 1; 
-  } while (portDisabled[pick - 1]); 
+  } while (pick == 1 || pick == 4 || pick == 5 || pick == 6); 
   return pick;
 }
 

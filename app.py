@@ -3,7 +3,6 @@ import time
 import threading
 import asyncio
 from pathlib import Path
-
 import flet as ft
 import flet_audio as fta
 import serial
@@ -193,6 +192,30 @@ def main(page: ft.Page):
         await audio.play()
         await power_calc()  
         #await score(none)
+    async def tidalwave_play(e):
+        await create_subprocess_exec('python', 'temp/pose.py')
+        tracker.reset()
+        await off_send(None)  
+        time.sleep(0.2)
+        url = r"GeometryDash\Dion_Timmer_-_Shiawase_(mp3.pm).mp3"
+        bpm = 141 
+        if ser and ser.is_open:
+            ser.write(f"{bpm}\n".encode())
+        audio.src = url
+        await audio.play()
+        await power_calc()
+    async def amethyst_play(e):
+        await create_subprocess_exec('python', 'temp/pose.py')
+        tracker.reset()
+        await off_send(None)  
+        time.sleep(0.2)
+        url = r"GeometryDash\Amethyst.mp3"
+        bpm = 166
+        if ser and ser.is_open:
+            ser.write(f"{bpm}\n".encode())
+        audio.src = url
+        await audio.play()
+        await power_calc()
 
     def score():
         while True:
@@ -239,10 +262,13 @@ def main(page: ft.Page):
                     powerlist.append(incoming_power)
                     
                     print("-" * 67) 
+                    print(f"Received Data: '{input_str}'")
                     print(f"HIT")
                     print(f"Reaction: {incoming_reaction} ms")
                     print(f"Power:    {incoming_power}")
                     print(f"Score: {self.current_total}")
+                    print(powerlist)
+                    print(reactionlist)
                     print("-" * 67) #676767676767
 
                 score_text.value = f"Score: {self.current_total}"
@@ -281,6 +307,9 @@ def main(page: ft.Page):
         electrodynamix_btn.visible = rhythm_game
         score_text.visible = rhythm_game
         back_btn.visible = not main
+        bpm_input.visible = rhythm_game
+        tidalwave_btn.visible = rhythm_game
+        amethyst_btn.visible = rhythm_game
         page.update()
 
     my_graph = ft.Image(src="historical_progress_graph.png", visible=False, width=1200, height=900)
@@ -292,11 +321,13 @@ def main(page: ft.Page):
     off_btn = ft.ElevatedButton(content=ft.Text("🛑 Reset", size=45), on_click=off_send, bgcolor=ft.Colors.RED, height=100, width=400)
     game_btn = ft.ElevatedButton(content=ft.Text("🎮 Games?", size=45), on_click=game_page, height=100, width=400)
     rhythmic_btn = ft.ElevatedButton(content=ft.Text("🥊 Boxing!", size=45), on_click=rhythmic_game, visible=False, width=400)
-    cycles_btn = ft.ElevatedButton(content=ft.Text("Cycles", size=45), on_click=cycles_play, height=100, width=400)
-    electroman_btn = ft.ElevatedButton(content=ft.Text("Electroman", size=45), on_click=electroman_play, height=100, width=400)
-    geometrical_btn = ft.ElevatedButton(content=ft.Text("Geometrical Dominator", size=35), on_click=geometrical_play, height=100, width=400)
-    hexagon_btn = ft.ElevatedButton(content=ft.Text("Hexagon Force", size=45), on_click=hexagon_play, height=100, width=400)
-    electrodynamix_btn = ft.ElevatedButton(content=ft.Text("Electrodynamix", size=45), on_click=electrodynamix_play, height=100, width=400)
+    cycles_btn = ft.ElevatedButton(content=ft.Text("Cycles", size=45), on_click=cycles_play, height=90, width=400)
+    electroman_btn = ft.ElevatedButton(content=ft.Text("Electroman", size=45), on_click=electroman_play, height=90, width=400)
+    geometrical_btn = ft.ElevatedButton(content=ft.Text("Geometrical Dominator", size=35), on_click=geometrical_play, height=90, width=400)
+    hexagon_btn = ft.ElevatedButton(content=ft.Text("Hexagon Force", size=45), on_click=hexagon_play, height=90, width=400)
+    electrodynamix_btn = ft.ElevatedButton(content=ft.Text("Electrodynamix", size=45), on_click=electrodynamix_play, height=90, width=400)
+    tidalwave_btn = ft.ElevatedButton(content=ft.Text("Tidalwave", size=45), on_click=tidalwave_play, height=90, width=400)
+    amethyst_btn = ft.ElevatedButton(content=ft.Text("Amethyst", size=45), on_click=amethyst_play, height=90, width=400)
     score_text = ft.Text(f"Score: {tracker.current_total}", size=135)
     page.add(
         header_text, 
@@ -310,14 +341,17 @@ def main(page: ft.Page):
         *ports, 
         sync_btn,
         rhythmic_btn,
-        bpm_input, 
+        #bpm_input, 
         #send_custom_btn,
+        tidalwave_btn,
+        amethyst_btn,
         cycles_btn,
         electroman_btn,
         geometrical_btn,
         hexagon_btn,
         electrodynamix_btn,
         score_text,
+        
     )
 
 
@@ -346,7 +380,20 @@ def main(page: ft.Page):
         if len(reactionlist) > 0:
             cur_avg_r = sum(reactionlist) / len(reactionlist)
             cur_avg_p = sum(powerlist) / len(powerlist)
+            hit_results = [0 if r == -30 else 1 for r in reactionlist]
+            
+            accuracy_percent = (sum(hit_results) / len(hit_results)) * 100
+            
+            perc_path = os.path.join(script_dir, "perc.txt")
 
+            with open(perc_path, 'a') as f3: 
+                f3.write(f"{accuracy_percent:.2f}\n")
+
+            history_perc = []
+            if os.path.exists(perc_path):
+                with open(perc_path, 'r') as f:
+                    history_perc = [float(l.strip()) for l in f if l.strip()]
+            
             with open(reaction_path, 'a') as f1: f1.write(f"{cur_avg_r:.2f}\n")
             with open(power_path, 'a') as f2: f2.write(f"{cur_avg_p:.2f}\n")
 
@@ -372,11 +419,26 @@ def main(page: ft.Page):
             ax2.set_title("Short-Term: Current Session Power")
             plt.tight_layout()
 
-            fig2, (ax3, ax4) = plt.subplots(2, 1, figsize=(9, 6))
+            # Create 3 subplots instead of 2
+            fig2, (ax3, ax4, ax5) = plt.subplots(3, 1, figsize=(9, 9))
             fig2.canvas.manager.set_window_title('Historical Performance')
-            ax3.plot(history_r, color='blue', marker='o', label='Session Averages')
-            ax4.plot(history_p, color='red', marker='s', label='Session Averages')
+            
+            # Existing Reaction/Power plots
+            ax3.plot(history_r, color='blue', marker='o', label='Reaction Avg')
+            ax3.set_title("Historical Reaction Time")
+            
+            ax4.plot(history_p, color='red', marker='s', label='Power Avg')
+            ax4.set_title("Historical Power")
+
+            # New Accuracy Percent plot
+            ax5.plot(history_perc, color='green', marker='^', label='Accuracy %')
+            ax5.set_title("Percent of lights hit")
+            ax5.set_ylim(0, 105)  # Percentage is usually 0-100
+            ax5.set_ylabel("Percentage (%)")
+
             plt.tight_layout()
+            plt.savefig(history_plot_path)
+            plt.show()
     
             plt.savefig(history_plot_path)
             print(f"Historical graph saved: {history_plot_path}")
