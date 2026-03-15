@@ -10,13 +10,19 @@ import matplotlib.pyplot as plt
 import subprocess 
 import asyncio
 from asyncio import create_subprocess_exec 
-
 powerlist = []
 reactionlist = []
 script_dir = os.path.dirname(os.path.abspath(__file__))
 reaction_path = os.path.join(script_dir, "reaction.txt")
 power_path = os.path.join(script_dir, "power.txt")
-history_plot_path = os.path.join(script_dir, "history_report.png")
+assets_dir = os.path.join(script_dir, "assets")
+if not os.path.exists(assets_dir):
+    os.makedirs(assets_dir)
+
+# Path for the Session Data (fig1)
+session_plot_path = os.path.join(assets_dir, "session_report.png")
+# Path for the Historical Data (fig2)
+history_plot_path = os.path.join(assets_dir, "history_report.png")
 stop_signal_path = os.path.join(script_dir, "temp/stop_signal.txt") 
 
 
@@ -324,6 +330,7 @@ def main(page: ft.Page):
         page.update()
 
     my_graph = ft.Image(src="historical_progress_graph.png", visible=False, width=1200, height=900)
+    mygraph2 = ft.Image(src="history_report.png", visible=False, width=1200, height=900)
     
     show_btn = ft.ElevatedButton(content=ft.Text("📈 Show Graph", size=45), on_click=show_image, height=100, width=400)
     back_btn = ft.ElevatedButton(content=ft.Text("🏠", size=45), on_click=go_back, height=100, width=400, visible=False)
@@ -440,15 +447,16 @@ def main(page: ft.Page):
             ax3.set_title("Historical Reaction Time (Higher = Better)")
             
             ax4.plot(history_p, color='red', marker='s', label='Power Avg')
-            ax4.set_title("Historical Power (Higher = Better)")
+            ax4.set_title("Historical Power (Higher = qqBetter)")
 
             ax5.plot(history_perc, color='green', marker='^', label='Accuracy %')
             ax5.set_title("Percent of lights hit (%)")
             ax5.set_ylim(0, 105) 
             ax5.set_ylabel("Percentage (%)")
-
+            
             plt.tight_layout()
-            plt.savefig(history_plot_path)
+            fig1.savefig(session_plot_path)
+            fig2.savefig(history_plot_path)
             plt.show()
     
             print(f"Historical graph saved: {history_plot_path}")
