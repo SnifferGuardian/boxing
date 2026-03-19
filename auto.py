@@ -5,7 +5,7 @@ import time
 import cv2
 import math
 
-AUDIO_FILE = 'GeometryDash/butterfly.mp3'
+AUDIO_FILE = 'GeometryDash/slaughter.mp3'
 LANE_COUNT = 12
 SENSITIVITY = 0.08 
 HOP = 128 
