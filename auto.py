@@ -5,13 +5,13 @@ import time
 import cv2
 import math
 
-AUDIO_FILE = 'GeometryDash/grief.mp3'
+AUDIO_FILE = 'GeometryDash/flamewall3.mp3'
 LANE_COUNT = 12
-SENSITIVITY = 0.08 
+SENSITIVITY = 0.04
 HOP = 96
 OFFSET = 0.06 
 SHOOT_TIME = 1.0   
-CIRCLE_SIZE = 40   
+CIRCLE_SIZE = 70   
 
 y, sr = librosa.load(AUDIO_FILE)
 onset_env = librosa.onset.onset_strength(y=y, sr=sr, hop_length=HOP)
@@ -35,10 +35,23 @@ def generate_square_tone(freq):
     audio = (wave * 32767).astype(np.int16)
     stereo_audio = np.repeat(audio[:, np.newaxis], 2, axis=1)
     return pygame.sndarray.make_sound(stereo_audio)
-
+# def generate_square_tone(freq):
+#     t = np.linspace(0, 0.1, int(44100 * 0.1), False)
+    
+#     # Sine wave version
+#     wave = np.sin(2 * np.pi * freq * t) * 0.3
+    
+#     # Apply fade to prevent clicking
+#     fade_out = np.linspace(1.0, 0.0, len(t))
+#     wave = wave * fade_out
+    
+#     audio = (wave * 32767).astype(np.int16)
+    
+#     # FIX: Access sndarray directly from pygame, not pygame.mixer
+#     return pygame.sndarray.make_sound(np.repeat(audio[:, np.newaxis], 2, axis=1))
 lane_sounds = [generate_square_tone(440 * (2 ** ((i - 9) / 12))) for i in range(12)]
 pygame.mixer.music.load(AUDIO_FILE)
-pygame.mixer.music.set_volume(1.0) 
+pygame.mixer.music.set_volume(0.5) 
 
 # --- 4. CV2 SETUP ---
 width, height = 1000, 1000

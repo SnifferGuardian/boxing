@@ -4,21 +4,31 @@ import pygame
 import time
 import cv2
 import math
+import random
+from ultralytics import YOLO
 
-# --- 1. CONFIGURATION ---
-AUDIO_FILE = 'GeometryDash/dream.mp3'
+AUDIO_FILE = 'GeometryDash/grief.mp3'  
+MODEL_PATH = 'temp/yolo11n-pose.engine'  
 LANE_COUNT = 12
 SENSITIVITY = 0.08 
-HOP = 128 
+HOP = 128
 OFFSET = 0.06 
 SHOOT_TIME = 1.0  
-CIRCLE_SIZE = 35   
+CIRCLE_SIZE = 50   
 HIT_WINDOW = 0.15
 PERFECT_WINDOW = 0.05
 RIPPLE_DURATION = 0.5 
 HOLD_THRESHOLD = 0.2 
 
-# --- 2. AUDIO ANALYSIS ---
+SCORE = 0
+POINTS_PERFECT = 100
+POINTS_GOOD = 50
+POINTS_MISS = -25
+POINTS_PENALTY = -500
+
+TRACK_INDICES = [9, 10, 15, 16] 
+
+print("Analyzing audio... please wait.")
 y, sr = librosa.load(AUDIO_FILE)
 onset_env = librosa.onset.onset_strength(y=y, sr=sr, hop_length=HOP)
 peaks = librosa.util.peak_pick(onset_env, pre_max=2, post_max=2, pre_avg=3, post_avg=3, delta=SENSITIVITY, wait=5)
@@ -30,16 +40,25 @@ for i in range(len(peaks)):
     f = min(peaks[i], chroma.shape[1] - 1)
     lane = np.argmax(chroma[:, f])
     t = beat_times[i]
+    
+    is_penalty = random.random() < 0.25 
+    
     is_hold = False
     duration = 0
-    if i < len(beat_times) - 1:
+    if not is_penalty and i < len(beat_times) - 1:
         diff = beat_times[i+1] - t
         if diff < HOLD_THRESHOLD:
             is_hold = True
             duration = diff
-    notes.append({'time': t, 'lane': lane, 'is_hold': is_hold, 'duration': duration})
+            
+    notes.append({
+        'time': t, 
+        'lane': lane, 
+        'is_hold': is_hold, 
+        'duration': duration,
+        'is_penalty': is_penalty 
+    })
 
-# --- 3. PYGAME SETUP ---
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
 
@@ -50,63 +69,32 @@ def generate_tone(freq):
     return pygame.sndarray.make_sound(np.repeat(audio[:, np.newaxis], 2, axis=1))
 
 lane_sounds = [generate_tone(440 * (2 ** ((i - 9) / 12))) for i in range(12)]
-pygame.mixer.music.load(AUDIO_FILE)
 
-# --- 4. VISUAL & INPUT SETUP ---
 width, height = 1000, 1000
 center = (width // 2, height // 2)
 max_radius = width // 2 - 80
-window_name = "Radial Hero: Multi-Key Hold"
+window_name = "Radial Hero: Pose Edition"
 cv2.namedWindow(window_name)
 
-# REVERSED KEY ORDER
-key_chars = ['=', '-', '0', '9', '8', '7', '6', '5', '4', '3', '2', '1']
-keys_list = [ord(c) for c in key_chars]
-
-# Track the current state of every key
-key_states = {k: False for k in keys_list}
-key_fresh_press = {k: False for k in keys_list}
-
-def update_keys(current_key_code):
-    global key_fresh_press
-    # Reset fresh press markers
-    for k in key_fresh_press: key_fresh_press[k] = False
+def map_to_ring(x, y, cam_w, cam_h):
+    """Maps camera coordinates to the circular game ring."""
+    gx = width - (x / cam_w * width)
+    gy = y / cam_h * height
     
-    if current_key_code in keys_list:
-        if not key_states[current_key_code]:
-            key_fresh_press[current_key_code] = True
-        key_states[current_key_code] = True
-    else:
-        # If waitKey returns 255 (no key), we have to be careful. 
-        # OpenCV waitKey is bad at 'KeyUp'. 
-        # We will auto-release keys after a short timeout or use a toggle.
-        # For this version, let's treat the key as 'held' for a few frames.
-        pass
+    dx = gx - center[0]
+    dy = gy - center[1]
+    dist = math.sqrt(dx**2 + dy**2)
+    
+    if dist == 0: return center
+    
+    constrained_x = center[0] + (dx / dist) * max_radius
+    constrained_y = center[1] + (dy / dist) * max_radius
+    return int(constrained_x), int(constrained_y)
 
-# Mouse Logic
-mouse_down = False
-mouse_pos = (0,0)
-def on_mouse(event, x, y, flags, param):
-    global mouse_down, mouse_pos
-    mouse_pos = (x,y)
-    if event == cv2.EVENT_LBUTTONDOWN: mouse_down = True
-    if event == cv2.EVENT_LBUTTONUP: mouse_down = False
-cv2.setMouseCallback(window_name, on_mouse)
+model = YOLO(MODEL_PATH)
+cap = cv2.VideoCapture(0)
+pygame.mixer.music.load(AUDIO_FILE)
 
-key_positions = []
-for i in range(LANE_COUNT):
-    angle = 2 * math.pi - ((i / LANE_COUNT) * 2 * math.pi)
-    tx = int(center[0] + max_radius * math.cos(angle))
-    ty = int(center[1] + max_radius * math.sin(angle))
-    key_positions.append((tx, ty))
-
-def get_feedback(delta_time):
-    ms = int(delta_time * 1000)
-    prefix = "+" if ms > 0 else ""
-    color = (0, 255, 0) if abs(ms) <= PERFECT_WINDOW * 1000 else (0, 255, 255)
-    return f"{'PERFECT' if abs(ms) <= PERFECT_WINDOW * 1000 else 'GOOD'} ({prefix}{ms}ms)", color
-
-# --- 5. MAIN LOOP ---
 active_bullets = []
 active_ripples = []
 feedback_messages = [] 
@@ -116,105 +104,121 @@ game_start_time = time.time()
 
 try:
     while pygame.mixer.music.get_busy():
-        elapsed = time.time() - game_start_time
-        raw_key = cv2.waitKey(1) & 0xFF
+        now = time.time()
+        elapsed = now - game_start_time
         
-        # Manual key release logic (since CV2 doesn't have KeyUp)
-        if raw_key != 255:
-            update_keys(raw_key)
-        else:
-            for k in key_states: key_states[k] = False
+        ret, frame_cam = cap.read()
+        if not ret: break
+        cam_h, cam_w, _ = frame_cam.shape
+        
+        results = model(frame_cam, verbose=False, stream=True)
+        tracked_points = []
+        for r in results:
+            if r.keypoints is not None:
+                kps = r.keypoints.xy.cpu().numpy()
+                if len(kps) > 0:
+                    person = kps[0] 
+                    for idx in TRACK_INDICES:
+                        if idx < len(person):
+                            kp = person[idx]
+                            if kp[0] > 0 and kp[1] > 0:
+                                tracked_points.append(map_to_ring(kp[0], kp[1], cam_w, cam_h))
 
         if beat_index < len(notes):
             n = notes[beat_index]
             if elapsed >= (n['time'] - SHOOT_TIME - OFFSET):
-                active_bullets.append([n['lane'], elapsed, 0, n['is_hold'], n['duration']])
+                active_bullets.append([n['lane'], elapsed, 0, n['is_hold'], n['duration'], n['is_penalty']])
                 beat_index += 1
 
         frame = np.zeros((height, width, 3), dtype=np.uint8)
         cv2.circle(frame, center, max_radius, (40, 40, 40), 2)
+        cv2.putText(frame, f"SCORE: {SCORE}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
 
-        for i in range(LANE_COUNT):
-            kx, ky = key_positions[i]
-            cv2.putText(frame, key_chars[i], (kx-8, ky+8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 1)
+        for (tx, ty) in tracked_points:
+            cv2.circle(frame, (tx, ty), 25, (255, 0, 255), -1)
+            cv2.circle(frame, (tx, ty), 30, (255, 255, 255), 2)  #magenta
 
-        # Update Ripples
         new_ripples = []
         for rx, ry, lane, r_start in active_ripples:
             r_prog = (elapsed - r_start) / RIPPLE_DURATION
             if r_prog < 1.0:
                 alpha = 1.0 - r_prog
-                cv2.circle(frame, (rx, ry), int(100 * r_prog), (255, 255, 255), max(1, int(10 * alpha)))
+                cv2.circle(frame, (rx, ry), int(120 * r_prog), (255, 255, 255), max(1, int(12 * alpha)))
                 new_ripples.append([rx, ry, lane, r_start])
         active_ripples = new_ripples
 
         new_bullets = []
         for bullet in active_bullets:
-            lane, start_time, state, is_hold, dur = bullet
+            lane, start_time, state, is_hold, dur, is_penalty = bullet
             bullet_elapsed = elapsed - start_time
             progress = bullet_elapsed / SHOOT_TIME
             angle = 2 * math.pi - ((lane / LANE_COUNT) * 2 * math.pi)
             bx, by = int(center[0] + (progress * max_radius) * math.cos(angle)), int(center[1] + (progress * max_radius) * math.sin(angle))
 
-            # LANE-SPECIFIC INPUT
-            current_lane_key = keys_list[lane]
-            is_pressing = key_states[current_lane_key]
-            is_fresh = key_fresh_press[current_lane_key]
-            
-            # Mouse over-ride (if clicking near the orb)
-            mouse_near = math.sqrt((bx-mouse_pos[0])**2 + (by-mouse_pos[1])**2) < CIRCLE_SIZE + 20
-            if mouse_near and mouse_down:
-                is_pressing = True
-                # Fresh press logic for mouse is harder in CV2, let's treat it as fresh for state 0
-                if state == 0: is_fresh = True
+            is_touching = False
+            for (tx, ty) in tracked_points:
+                if math.sqrt((bx - tx)**2 + (by - ty)**2) < (CIRCLE_SIZE + 40):
+                    is_touching = True
+                    break
 
-            # HIT LOGIC
-            if state == 0:
+            if state == 0: 
                 delta = bullet_elapsed - SHOOT_TIME
-                if abs(delta) < HIT_WINDOW and is_fresh:
-                    msg, color = get_feedback(delta)
-                    feedback_messages.append([msg, color, elapsed])
-                    lane_sounds[lane].play()
-                    active_ripples.append([bx, by, lane, elapsed])
-                    bullet[2] = 3 if is_hold else 1
+                if abs(delta) < HIT_WINDOW and is_touching:
+                    if is_penalty:
+                        SCORE += POINTS_PENALTY
+                        feedback_messages.append(["DANGER! -500", (0, 0, 255), elapsed])
+                        bullet[2] = 2 
+                    else:
+                        is_perfect = abs(delta) <= PERFECT_WINDOW
+                        SCORE += POINTS_PERFECT if is_perfect else POINTS_GOOD
+                        msg = "PERFECT" if is_perfect else "GOOD"
+                        color = (0, 255, 0) if is_perfect else (0, 255, 255)
+                        feedback_messages.append([f"{msg} ({int(delta*1000)}ms)", color, elapsed])
+                        lane_sounds[lane].play()
+                        active_ripples.append([bx, by, lane, elapsed])
+                        bullet[2] = 3 if is_hold else 1
                 elif progress > (1.0 + HIT_WINDOW):
-                    feedback_messages.append(["MISS", (0, 0, 255), elapsed])
+                    if not is_penalty:
+                        SCORE += POINTS_MISS
+                        feedback_messages.append(["MISS", (0, 0, 150), elapsed])
                     bullet[2] = 2
 
-            elif state == 3: # HOLDING
-                if not is_pressing:
+            elif state == 3: 
+                if not is_touching:
                     feedback_messages.append(["DROPPED!", (0, 165, 255), elapsed])
                     bullet[2] = 2
-                elif progress > (1.0 + dur):
+                elif progress > (1.0 + (dur / SHOOT_TIME)): 
+                    SCORE += 50
                     feedback_messages.append(["HELD!", (255, 255, 0), elapsed])
                     bullet[2] = 1
 
             if bullet[2] in [0, 3]:
-                color = (0, 255, 255) if bullet[2] == 3 else (int(255*(1-lane/12)), 150, int(255*(lane/12)))
+                b_color = (0, 0, 255) if is_penalty else ((0, 255, 255) if state == 3 else (255, 200, 0))
                 if is_hold:
                     tail_p = max(0, progress - 0.2)
                     tx, ty = int(center[0] + (tail_p * max_radius) * math.cos(angle)), int(center[1] + (tail_p * max_radius) * math.sin(angle))
-                    cv2.line(frame, (bx, by), (tx, ty), color, 8)
-                cv2.circle(frame, (bx, by), int(CIRCLE_SIZE * min(progress, 1.0)), color, -1)
+                    cv2.line(frame, (bx, by), (tx, ty), b_color, 10)
+                
+                cv2.circle(frame, (bx, by), int(CIRCLE_SIZE * min(progress, 1.0)), b_color, -1)
                 new_bullets.append(bullet)
 
         active_bullets = new_bullets
 
-        # Feedback
         new_fb = []
         for msg, color, spawn in feedback_messages:
             f_el = elapsed - spawn
-            if f_el < 0.7:
-                alpha = 1.0 - (f_el/0.7)
-                tx = center[0] - cv2.getTextSize(msg, 0, 0.8, 2)[0][0] // 2
-                cv2.putText(frame, msg, (tx, center[1] - int(f_el * 100)), cv2.FONT_HERSHEY_SIMPLEX, 0.8, 
-                            (int(color[0]*alpha), int(color[1]*alpha), int(color[2]*alpha)), 2)
+            if f_el < 0.8:
+                alpha = 1.0 - (f_el/0.8)
+                tx = center[0] - cv2.getTextSize(msg, 0, 1.0, 2)[0][0] // 2
+                cv2.putText(frame, msg, (tx, center[1] - int(f_el * 120)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
+                            (int(color[0]*alpha), int(color[1]*alpha), int(color[2]*alpha)), 3)
                 new_fb.append([msg, color, spawn])
         feedback_messages = new_fb
 
         cv2.imshow(window_name, frame)
-        if raw_key == ord('q'): break
+        if cv2.waitKey(1) & 0xFF == ord('q'): break
 
 except KeyboardInterrupt: pass
+cap.release()
 pygame.mixer.music.stop()
 cv2.destroyAllWindows()
