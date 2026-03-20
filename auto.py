@@ -5,10 +5,10 @@ import time
 import cv2
 import math
 
-AUDIO_FILE = 'GeometryDash/slaughter.mp3'
+AUDIO_FILE = 'GeometryDash/grief.mp3'
 LANE_COUNT = 12
 SENSITIVITY = 0.08 
-HOP = 128 
+HOP = 96
 OFFSET = 0.06 
 SHOOT_TIME = 1.0   
 CIRCLE_SIZE = 40   
@@ -41,7 +41,7 @@ pygame.mixer.music.load(AUDIO_FILE)
 pygame.mixer.music.set_volume(1.0) 
 
 # --- 4. CV2 SETUP ---
-width, height = 800, 800
+width, height = 1000, 1000
 center = (width // 2, height // 2)
 max_radius = width // 2 - 80
 window_name = "Automatic Radial Symphony"

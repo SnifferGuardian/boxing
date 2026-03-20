@@ -5,20 +5,19 @@ import time
 import cv2
 import math
 
-# --- 1. CONFIGURATION ---
-AUDIO_FILE = 'GeometryDash/dream.mp3'
+AUDIO_FILE = 'GeometryDash/grief.mp3'
 LANE_COUNT = 12
 SENSITIVITY = 0.08 
-HOP = 128 
+HOP = 64 
 OFFSET = 0.06 
 SHOOT_TIME = 1.0  
-CIRCLE_SIZE = 35   
+CIRCLE_SIZE = 50   
 HIT_WINDOW = 0.15
 PERFECT_WINDOW = 0.05
 RIPPLE_DURATION = 0.5 
 HOLD_THRESHOLD = 0.2 
+KEY_TIMEOUT = 0.15 
 
-# --- 2. AUDIO ANALYSIS ---
 y, sr = librosa.load(AUDIO_FILE)
 onset_env = librosa.onset.onset_strength(y=y, sr=sr, hop_length=HOP)
 peaks = librosa.util.peak_pick(onset_env, pre_max=2, post_max=2, pre_avg=3, post_avg=3, delta=SENSITIVITY, wait=5)
@@ -39,7 +38,6 @@ for i in range(len(peaks)):
             duration = diff
     notes.append({'time': t, 'lane': lane, 'is_hold': is_hold, 'duration': duration})
 
-# --- 3. PYGAME SETUP ---
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
 
@@ -52,38 +50,33 @@ def generate_tone(freq):
 lane_sounds = [generate_tone(440 * (2 ** ((i - 9) / 12))) for i in range(12)]
 pygame.mixer.music.load(AUDIO_FILE)
 
-# --- 4. VISUAL & INPUT SETUP ---
 width, height = 1000, 1000
 center = (width // 2, height // 2)
 max_radius = width // 2 - 80
 window_name = "Radial Hero: Multi-Key Hold"
 cv2.namedWindow(window_name)
 
-# REVERSED KEY ORDER
 key_chars = ['=', '-', '0', '9', '8', '7', '6', '5', '4', '3', '2', '1']
 keys_list = [ord(c) for c in key_chars]
 
-# Track the current state of every key
 key_states = {k: False for k in keys_list}
 key_fresh_press = {k: False for k in keys_list}
+last_seen_key = {k: 0 for k in keys_list} 
 
-def update_keys(current_key_code):
+def update_keys(current_key_code, current_time):
     global key_fresh_press
-    # Reset fresh press markers
     for k in key_fresh_press: key_fresh_press[k] = False
     
     if current_key_code in keys_list:
         if not key_states[current_key_code]:
             key_fresh_press[current_key_code] = True
         key_states[current_key_code] = True
-    else:
-        # If waitKey returns 255 (no key), we have to be careful. 
-        # OpenCV waitKey is bad at 'KeyUp'. 
-        # We will auto-release keys after a short timeout or use a toggle.
-        # For this version, let's treat the key as 'held' for a few frames.
-        pass
+        last_seen_key[current_key_code] = current_time
 
-# Mouse Logic
+    for k in keys_list:
+        if current_time - last_seen_key[k] > KEY_TIMEOUT:
+            key_states[k] = False
+
 mouse_down = False
 mouse_pos = (0,0)
 def on_mouse(event, x, y, flags, param):
@@ -106,7 +99,6 @@ def get_feedback(delta_time):
     color = (0, 255, 0) if abs(ms) <= PERFECT_WINDOW * 1000 else (0, 255, 255)
     return f"{'PERFECT' if abs(ms) <= PERFECT_WINDOW * 1000 else 'GOOD'} ({prefix}{ms}ms)", color
 
-# --- 5. MAIN LOOP ---
 active_bullets = []
 active_ripples = []
 feedback_messages = [] 
@@ -116,14 +108,11 @@ game_start_time = time.time()
 
 try:
     while pygame.mixer.music.get_busy():
-        elapsed = time.time() - game_start_time
-        raw_key = cv2.waitKey(1) & 0xFF
+        now = time.time()
+        elapsed = now - game_start_time
         
-        # Manual key release logic (since CV2 doesn't have KeyUp)
-        if raw_key != 255:
-            update_keys(raw_key)
-        else:
-            for k in key_states: key_states[k] = False
+        raw_key = cv2.waitKey(1) & 0xFF
+        update_keys(raw_key, now) 
 
         if beat_index < len(notes):
             n = notes[beat_index]
@@ -138,7 +127,6 @@ try:
             kx, ky = key_positions[i]
             cv2.putText(frame, key_chars[i], (kx-8, ky+8), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (100, 100, 100), 1)
 
-        # Update Ripples
         new_ripples = []
         for rx, ry, lane, r_start in active_ripples:
             r_prog = (elapsed - r_start) / RIPPLE_DURATION
@@ -156,20 +144,16 @@ try:
             angle = 2 * math.pi - ((lane / LANE_COUNT) * 2 * math.pi)
             bx, by = int(center[0] + (progress * max_radius) * math.cos(angle)), int(center[1] + (progress * max_radius) * math.sin(angle))
 
-            # LANE-SPECIFIC INPUT
             current_lane_key = keys_list[lane]
             is_pressing = key_states[current_lane_key]
             is_fresh = key_fresh_press[current_lane_key]
             
-            # Mouse over-ride (if clicking near the orb)
             mouse_near = math.sqrt((bx-mouse_pos[0])**2 + (by-mouse_pos[1])**2) < CIRCLE_SIZE + 20
             if mouse_near and mouse_down:
                 is_pressing = True
-                # Fresh press logic for mouse is harder in CV2, let's treat it as fresh for state 0
                 if state == 0: is_fresh = True
 
-            # HIT LOGIC
-            if state == 0:
+            if state == 0: 
                 delta = bullet_elapsed - SHOOT_TIME
                 if abs(delta) < HIT_WINDOW and is_fresh:
                     msg, color = get_feedback(delta)
@@ -181,11 +165,11 @@ try:
                     feedback_messages.append(["MISS", (0, 0, 255), elapsed])
                     bullet[2] = 2
 
-            elif state == 3: # HOLDING
+            elif state == 3: 
                 if not is_pressing:
                     feedback_messages.append(["DROPPED!", (0, 165, 255), elapsed])
                     bullet[2] = 2
-                elif progress > (1.0 + dur):
+                elif progress > (1.0 + (dur / SHOOT_TIME)): 
                     feedback_messages.append(["HELD!", (255, 255, 0), elapsed])
                     bullet[2] = 1
 
@@ -200,7 +184,6 @@ try:
 
         active_bullets = new_bullets
 
-        # Feedback
         new_fb = []
         for msg, color, spawn in feedback_messages:
             f_el = elapsed - spawn
