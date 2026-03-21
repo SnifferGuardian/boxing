@@ -38,16 +38,13 @@ def generate_square_tone(freq):
 # def generate_square_tone(freq):
 #     t = np.linspace(0, 0.1, int(44100 * 0.1), False)
     
-#     # Sine wave version
 #     wave = np.sin(2 * np.pi * freq * t) * 0.3
     
-#     # Apply fade to prevent clicking
 #     fade_out = np.linspace(1.0, 0.0, len(t))
 #     wave = wave * fade_out
     
 #     audio = (wave * 32767).astype(np.int16)
     
-#     # FIX: Access sndarray directly from pygame, not pygame.mixer
 #     return pygame.sndarray.make_sound(np.repeat(audio[:, np.newaxis], 2, axis=1))
 lane_sounds = [generate_square_tone(440 * (2 ** ((i - 9) / 12))) for i in range(12)]
 pygame.mixer.music.load(AUDIO_FILE)
