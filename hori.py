@@ -14,14 +14,13 @@ SENSITIVITY = 0.08
 HOP = 128
 OFFSET = 0.06 
 
-# --- SETTINGS ---
 SHOOT_TIME = 1   
 width, height = 2000, 1000 
 CIRCLE_SIZE = 50   
 HIT_WINDOW = 0.15
 PERFECT_WINDOW = 0.05
-RIPPLE_DURATION = 0.4
-EXPLOSION_DURATION = 0.4
+RIPPLE_DURATION = 0.5 
+EXPLOSION_DURATION = 0.4  
 HOLD_THRESHOLD = 0.2 
 
 SCORE = 0
@@ -30,9 +29,9 @@ POINTS_GOOD = 50
 POINTS_MISS = -25
 POINTS_PENALTY = -500
 
-TRACK_INDICES = [9, 10, 13, 14] # Left/Right Wrists and Ankles
+TRACK_INDICES = [9, 10, 13, 14] 
 
-print("Analyzing audio... please wait.")
+print("Analyzing audio")
 y, sr = librosa.load(AUDIO_FILE)
 onset_env = librosa.onset.onset_strength(y=y, sr=sr, hop_length=HOP)
 peaks = librosa.util.peak_pick(onset_env, pre_max=2, post_max=2, pre_avg=3, post_avg=3, delta=SENSITIVITY, wait=5)
@@ -82,7 +81,7 @@ pygame.mixer.music.load(AUDIO_FILE)
 
 active_bullets = []
 active_ripples = []
-active_explosions = [] # New list for explosion effects
+active_explosions = [] 
 feedback_messages = [] 
 beat_index = 0
 pygame.mixer.music.play()
@@ -118,16 +117,13 @@ try:
 
         frame = np.zeros((height, width, 3), dtype=np.uint8)
         
-        # Draw Hit Line
         cv2.line(frame, (HIT_X, 0), (HIT_X, height), (100, 100, 100), 8)
         cv2.putText(frame, f"SCORE: {SCORE}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
 
-        # Draw Player Markers
         for (tx, ty) in tracked_points:
             cv2.circle(frame, (tx, ty), 35, (255, 0, 255), -1)
             cv2.circle(frame, (tx, ty), 40, (255, 255, 255), 2)
 
-        # Handle Ripples (Normal hits)
         new_ripples = []
         for rx, ry, lane, r_start in active_ripples:
             r_prog = (elapsed - r_start) / RIPPLE_DURATION
@@ -137,15 +133,13 @@ try:
                 new_ripples.append([rx, ry, lane, r_start])
         active_ripples = new_ripples
 
-        # --- EXPLOSION LOGIC ---
         new_explosions = []
         for ex, ey, e_start in active_explosions:
             e_prog = (elapsed - e_start) / EXPLOSION_DURATION
             if e_prog < 1.0:
-                # Create a multi-layered fiery expansion
-                cv2.circle(frame, (ex, ey), int(200 * e_prog), (0, 69, 255), -1) # Red-Orange Outer
-                cv2.circle(frame, (ex, ey), int(120 * e_prog), (0, 165, 255), -1) # Orange Middle
-                cv2.circle(frame, (ex, ey), int(60 * e_prog), (0, 255, 255), -1)  # Yellow Center
+                cv2.circle(frame, (ex, ey), int(200 * e_prog), (0, 69, 255), -1) # Red
+                cv2.circle(frame, (ex, ey), int(120 * e_prog), (0, 165, 255), -1) # Orange 
+                cv2.circle(frame, (ex, ey), int(60 * e_prog), (0, 255, 255), -1)  # Yellow 
                 new_explosions.append([ex, ey, e_start])
         active_explosions = new_explosions
 
@@ -170,7 +164,7 @@ try:
                     if is_penalty:
                         SCORE += POINTS_PENALTY
                         feedback_messages.append(["DANGER!", (0, 0, 255), elapsed])
-                        # TRIGGER EXPLOSION HERE
+                        
                         active_explosions.append([bx, by, elapsed])
                         bullet[2] = 2 
                     else:
