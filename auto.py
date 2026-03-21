@@ -52,7 +52,6 @@ def generate_square_tone(freq):
 lane_sounds = [generate_square_tone(440 * (2 ** ((i - 9) / 12))) for i in range(12)]
 pygame.mixer.music.load(AUDIO_FILE)
 pygame.mixer.music.set_volume(0.5) 
-g
 width, height = 1000, 1000
 center = (width // 2, height // 2)
 max_radius = width // 2 - 80
