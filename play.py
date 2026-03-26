@@ -7,28 +7,39 @@ import math
 import random
 from ultralytics import YOLO
 
-AUDIO_FILE = 'GeometryDash/grief.mp3'  
+AUDIO_FILE = f"GeometryDash/{input("Song name: ")}.mp3"
 MODEL_PATH = 'temp/yolo11n-pose.engine'  
 LANE_COUNT = 12
-SENSITIVITY = 0.08 
+SENSITIVITY = float(input("Density (0-100)"))
 HOP = 128
 OFFSET = 0.06 
-SHOOT_TIME = 1.0  
+
+# --- SETTINGS ---
+SHOOT_TIME = float(input("Speed)"))   
+width, height = 2000, 1000 
 CIRCLE_SIZE = 50   
 HIT_WINDOW = 0.15
 PERFECT_WINDOW = 0.05
 RIPPLE_DURATION = 0.5 
+EXPLOSION_DURATION = 0.4
 HOLD_THRESHOLD = 0.2 
+
+# --- INACTIVITY SETTINGS ---
+INACTIVITY_LIMIT = 3.0       
+PENALTY_INTERVAL = 0.1       
+PENALTY_AMOUNT = -1000       
+JITTER_THRESHOLD = 15      
+# -------------------------------
 
 SCORE = 0
 POINTS_PERFECT = 100
 POINTS_GOOD = 50
 POINTS_MISS = -25
-POINTS_PENALTY = -500
+POINTS_PENALTY = -10
 
-TRACK_INDICES = [9, 10, 15, 16] 
+TRACK_INDICES = [9, 10, 13, 14] 
 
-print("Analyzing audio... please wait.")
+print("Analyzing audio")
 y, sr = librosa.load(AUDIO_FILE)
 onset_env = librosa.onset.onset_strength(y=y, sr=sr, hop_length=HOP)
 peaks = librosa.util.peak_pick(onset_env, pre_max=2, post_max=2, pre_avg=3, post_avg=3, delta=SENSITIVITY, wait=5)
@@ -40,9 +51,7 @@ for i in range(len(peaks)):
     f = min(peaks[i], chroma.shape[1] - 1)
     lane = np.argmax(chroma[:, f])
     t = beat_times[i]
-    
     is_penalty = random.random() < 0.25 
-    
     is_hold = False
     duration = 0
     if not is_penalty and i < len(beat_times) - 1:
@@ -50,14 +59,7 @@ for i in range(len(peaks)):
         if diff < HOLD_THRESHOLD:
             is_hold = True
             duration = diff
-            
-    notes.append({
-        'time': t, 
-        'lane': lane, 
-        'is_hold': is_hold, 
-        'duration': duration,
-        'is_penalty': is_penalty 
-    })
+    notes.append({'time': t, 'lane': lane, 'is_hold': is_hold, 'duration': duration, 'is_penalty': is_penalty})
 
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
@@ -70,26 +72,15 @@ def generate_tone(freq):
 
 lane_sounds = [generate_tone(440 * (2 ** ((i - 9) / 12))) for i in range(12)]
 
-width, height = 1000, 1000
-center = (width // 2, height // 2)
-max_radius = width // 2 - 80
-window_name = "Radial Hero: Pose Edition"
+SPAWN_X = -50               
+HIT_X = width - 200         
+
+window_name = "Locked Line Hero"
 cv2.namedWindow(window_name)
 
-def map_to_ring(x, y, cam_w, cam_h):
-    """Maps camera coordinates to the circular game ring."""
-    gx = width - (x / cam_w * width)
+def map_to_line(x, y, cam_w, cam_h):
     gy = y / cam_h * height
-    
-    dx = gx - center[0]
-    dy = gy - center[1]
-    dist = math.sqrt(dx**2 + dy**2)
-    
-    if dist == 0: return center
-    
-    constrained_x = center[0] + (dx / dist) * max_radius
-    constrained_y = center[1] + (dy / dist) * max_radius
-    return int(constrained_x), int(constrained_y)
+    return int(HIT_X), int(gy)
 
 model = YOLO(MODEL_PATH)
 cap = cv2.VideoCapture(0)
@@ -97,8 +88,14 @@ pygame.mixer.music.load(AUDIO_FILE)
 
 active_bullets = []
 active_ripples = []
+active_explosions = []
 feedback_messages = [] 
 beat_index = 0
+
+last_move_time = time.time()
+last_penalty_hit_time = 0
+prev_wrist_positions = {9: (0, 0), 10: (0, 0)}
+
 pygame.mixer.music.play()
 game_start_time = time.time()
 
@@ -113,6 +110,8 @@ try:
         
         results = model(frame_cam, verbose=False, stream=True)
         tracked_points = []
+        current_wrists = {}
+
         for r in results:
             if r.keypoints is not None:
                 kps = r.keypoints.xy.cpu().numpy()
@@ -122,7 +121,64 @@ try:
                         if idx < len(person):
                             kp = person[idx]
                             if kp[0] > 0 and kp[1] > 0:
-                                tracked_points.append(map_to_ring(kp[0], kp[1], cam_w, cam_h))
+                                screen_pos = map_to_line(kp[0], kp[1], cam_w, cam_h)
+                                tracked_points.append(screen_pos)
+                                if idx in [9, 10]:
+                                    current_wrists[idx] = (kp[0], kp[1])
+
+        moved_significantly = False
+        for idx in [9, 10]:
+            if idx in current_wrists:
+                curr = current_wrists[idx]
+                prev = prev_wrist_positions[idx]
+                dist = math.sqrt((curr[0]-prev[0])**2 + (curr[1]-prev[1])**2)
+                if dist > JITTER_THRESHOLD:
+                    moved_significantly = True
+                prev_wrist_positions[idx] = curr
+
+        if moved_significantly:
+            last_move_time = now
+        
+        idle_time = now - last_move_time
+
+        if idle_time > INACTIVITY_LIMIT:
+            if (now - last_penalty_hit_time) > PENALTY_INTERVAL:
+                SCORE += PENALTY_AMOUNT
+                last_penalty_hit_time = now
+                feedback_messages.append(["IDLE PENALTY!", (0, 0, 255), elapsed])
+
+        frame = np.zeros((height, width, 3), dtype=np.uint8)
+        cv2.line(frame, (HIT_X, 0), (HIT_X, height), (100, 100, 100), 8)
+        cv2.putText(frame, f"SCORE: {SCORE}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
+
+        if idle_time > 1.5:
+            warning_color = (0, 0, 255) if idle_time > 2.5 else (0, 165, 255)
+            cv2.putText(frame, f"MOVE WRISTS! {max(0, INACTIVITY_LIMIT-idle_time):.1f}s", 
+                        (width//2 - 200, 100), cv2.FONT_HERSHEY_SIMPLEX, 2.0, warning_color, 5)
+
+        for (tx, ty) in tracked_points:
+            cv2.circle(frame, (tx, ty), 35, (255, 0, 255), -1)
+            cv2.circle(frame, (tx, ty), 40, (255, 255, 255), 2)
+
+        # Ripples and Explosions
+        new_ripples = []
+        for rx, ry, lane, r_start in active_ripples:
+            r_prog = (elapsed - r_start) / RIPPLE_DURATION
+            if r_prog < 1.0:
+                alpha = 1.0 - r_prog
+                cv2.circle(frame, (rx, ry), int(150 * r_prog), (255, 255, 255), max(1, int(15 * alpha)))
+                new_ripples.append([rx, ry, lane, r_start])
+        active_ripples = new_ripples
+
+        new_explosions = []
+        for ex, ey, e_start in active_explosions:
+            e_prog = (elapsed - e_start) / EXPLOSION_DURATION
+            if e_prog < 1.0:
+                cv2.circle(frame, (ex, ey), int(200 * e_prog), (0, 69, 255), -1)
+                cv2.circle(frame, (ex, ey), int(120 * e_prog), (0, 165, 255), -1)
+                cv2.circle(frame, (ex, ey), int(60 * e_prog), (0, 255, 255), -1)
+                new_explosions.append([ex, ey, e_start])
+        active_explosions = new_explosions
 
         if beat_index < len(notes):
             n = notes[beat_index]
@@ -130,34 +186,17 @@ try:
                 active_bullets.append([n['lane'], elapsed, 0, n['is_hold'], n['duration'], n['is_penalty']])
                 beat_index += 1
 
-        frame = np.zeros((height, width, 3), dtype=np.uint8)
-        cv2.circle(frame, center, max_radius, (40, 40, 40), 2)
-        cv2.putText(frame, f"SCORE: {SCORE}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
-
-        for (tx, ty) in tracked_points:
-            cv2.circle(frame, (tx, ty), 25, (255, 0, 255), -1)
-            cv2.circle(frame, (tx, ty), 30, (255, 255, 255), 2)  #magenta
-
-        new_ripples = []
-        for rx, ry, lane, r_start in active_ripples:
-            r_prog = (elapsed - r_start) / RIPPLE_DURATION
-            if r_prog < 1.0:
-                alpha = 1.0 - r_prog
-                cv2.circle(frame, (rx, ry), int(120 * r_prog), (255, 255, 255), max(1, int(12 * alpha)))
-                new_ripples.append([rx, ry, lane, r_start])
-        active_ripples = new_ripples
-
         new_bullets = []
         for bullet in active_bullets:
             lane, start_time, state, is_hold, dur, is_penalty = bullet
             bullet_elapsed = elapsed - start_time
             progress = bullet_elapsed / SHOOT_TIME
-            angle = 2 * math.pi - ((lane / LANE_COUNT) * 2 * math.pi)
-            bx, by = int(center[0] + (progress * max_radius) * math.cos(angle)), int(center[1] + (progress * max_radius) * math.sin(angle))
+            bx = int(SPAWN_X + (progress * (HIT_X - SPAWN_X)))
+            by = int((lane + 0.5) * (height / LANE_COUNT))
 
             is_touching = False
             for (tx, ty) in tracked_points:
-                if math.sqrt((bx - tx)**2 + (by - ty)**2) < (CIRCLE_SIZE + 40):
+                if abs(by - ty) < (CIRCLE_SIZE + 40) and abs(bx - tx) < 80:
                     is_touching = True
                     break
 
@@ -166,25 +205,25 @@ try:
                 if abs(delta) < HIT_WINDOW and is_touching:
                     if is_penalty:
                         SCORE += POINTS_PENALTY
-                        feedback_messages.append(["DANGER! -500", (0, 0, 255), elapsed])
+                        feedback_messages.append(["DANGER!", (0, 0, 255), elapsed])
+                        active_explosions.append([bx, by, elapsed])
                         bullet[2] = 2 
                     else:
                         is_perfect = abs(delta) <= PERFECT_WINDOW
                         SCORE += POINTS_PERFECT if is_perfect else POINTS_GOOD
                         msg = "PERFECT" if is_perfect else "GOOD"
                         color = (0, 255, 0) if is_perfect else (0, 255, 255)
-                        feedback_messages.append([f"{msg} ({int(delta*1000)}ms)", color, elapsed])
+                        feedback_messages.append([msg, color, elapsed]) # Re-added labels
                         lane_sounds[lane].play()
                         active_ripples.append([bx, by, lane, elapsed])
                         bullet[2] = 3 if is_hold else 1
                 elif progress > (1.0 + HIT_WINDOW):
-                    if not is_penalty:
+                    if not is_penalty: 
                         SCORE += POINTS_MISS
-                        feedback_messages.append(["MISS", (0, 0, 150), elapsed])
+                        feedback_messages.append(["MISS", (0, 0, 150), elapsed]) # Re-added labels
                     bullet[2] = 2
-
             elif state == 3: 
-                if not is_touching:
+                if not is_touching: 
                     feedback_messages.append(["DROPPED!", (0, 165, 255), elapsed])
                     bullet[2] = 2
                 elif progress > (1.0 + (dur / SHOOT_TIME)): 
@@ -196,12 +235,12 @@ try:
                 b_color = (0, 0, 255) if is_penalty else ((0, 255, 255) if state == 3 else (255, 200, 0))
                 if is_hold:
                     tail_p = max(0, progress - 0.2)
-                    tx, ty = int(center[0] + (tail_p * max_radius) * math.cos(angle)), int(center[1] + (tail_p * max_radius) * math.sin(angle))
-                    cv2.line(frame, (bx, by), (tx, ty), b_color, 10)
+                    tx_tail = int(SPAWN_X + (tail_p * (HIT_X - SPAWN_X)))
+                    # --- TAIL WIDTH 95 ---
+                    cv2.line(frame, (bx, by), (tx_tail, by), b_color, 95)
                 
-                cv2.circle(frame, (bx, by), int(CIRCLE_SIZE * min(progress, 1.0)), b_color, -1)
+                cv2.circle(frame, (bx, by), CIRCLE_SIZE, b_color, -1)
                 new_bullets.append(bullet)
-
         active_bullets = new_bullets
 
         new_fb = []
@@ -209,9 +248,9 @@ try:
             f_el = elapsed - spawn
             if f_el < 0.8:
                 alpha = 1.0 - (f_el/0.8)
-                tx = center[0] - cv2.getTextSize(msg, 0, 1.0, 2)[0][0] // 2
-                cv2.putText(frame, msg, (tx, center[1] - int(f_el * 120)), cv2.FONT_HERSHEY_SIMPLEX, 1.0, 
-                            (int(color[0]*alpha), int(color[1]*alpha), int(color[2]*alpha)), 3)
+                cv2.putText(frame, msg, (HIT_X - 400, height // 2 + random.randint(-5,5)), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.5, 
+                            (int(color[0]*alpha), int(color[1]*alpha), int(color[2]*alpha)), 4)
                 new_fb.append([msg, color, spawn])
         feedback_messages = new_fb
 

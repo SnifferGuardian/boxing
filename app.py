@@ -19,9 +19,7 @@ assets_dir = os.path.join(script_dir, "assets")
 if not os.path.exists(assets_dir):
     os.makedirs(assets_dir)
 
-# Path for the Session Data (fig1)
 session_plot_path = os.path.join(assets_dir, "session_report.png")
-# Path for the Historical Data (fig2)
 history_plot_path = os.path.join(assets_dir, "history_report.png")
 stop_signal_path = os.path.join(script_dir, "temp/stop_signal.txt") 
 
@@ -75,17 +73,6 @@ def main(page: ft.Page):
         on_state_change=check_audio_status,
         on_seek_complete=lambda _: print("Seek complete"),
     )
-    # funct for picking file but atp idc
-    # async def handle_pick_files(e: ft.Event[ft.Button]):
-    #     files = await ft.FilePicker().pick_files(allow_multiple=True)
-    #     selected_files.value = (
-    #         ", ".join(map(lambda f: f.name, files)) if files else "Cancelled!"
-    #     )
-    #     print(selected_files.value)
-    #     full_path = get_absolute_path("")
-    #     url = f"{full_path}\GeometryDash\{selected_files.value}"
-    #     print(full_path)
-    #     print(url)
     async def audio_off(e):
         await audio.seek(position=0)
         await audio.pause()
@@ -158,21 +145,19 @@ def main(page: ft.Page):
             ser.write(f"{bpm}\n".encode())  
         audio.src = url
         await audio.play()
-        await power_calc()  
-        #await score(none)
+        await power_calc()
     async def geometrical_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
         tracker.reset()
         await off_send(None)  
         time.sleep(0.2)
         url = r"GeometryDash\5-03. Geometrical Dominator.mp3"
-        bpm = 148  # Set your desired BPM here
+        bpm = 148  
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
-        await power_calc()  
-        #await score(none)
+        await power_calc()
     async def hexagon_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
         tracker.reset()
@@ -196,8 +181,7 @@ def main(page: ft.Page):
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
-        await power_calc()  
-        #await score(none)
+        await power_calc()
     async def tidalwave_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
         tracker.reset()
@@ -233,6 +217,11 @@ def main(page: ft.Page):
                 except Exception as e:
                     print(f"Serial Read Error: {e}")
             time.sleep(0.01) 
+
+    async def jumper_play(e):
+        print("Launching Jumper Mode...")
+        await audio.pause()
+        await create_subprocess_exec('python', 'hori.py')
 
     thread = threading.Thread(target=score, daemon=True)
     thread.start()
@@ -283,9 +272,7 @@ def main(page: ft.Page):
                     print(f"Reaction: {incoming_reaction} ms")
                     print(f"Power:    {incoming_power}")
                     print(f"Score: {self.current_total}")
-                    # print(powerlist)
-                    # print(reactionlist)
-                    print("-" * 67) #676767676767
+                    print("-" * 67) 
 
                 score_text.value = f"Score: {self.current_total}"
                 page.update()
@@ -295,7 +282,7 @@ def main(page: ft.Page):
                     print(f"Warning: Ignored non-numeric serial data: '{input_str}'")    
     tracker = ScoreTracker()
 
-    def toggle_visibility(main=False, ports_view=False, graph=False, game_menu=False, rhythm_game=False):
+    def toggle_visibility(main=False, ports_view=False, graph=False, game_menu=False, rhythm_game=False, jumper_menu=False):
        
         header_text.visible = main
         show_btn.visible = main
@@ -311,9 +298,11 @@ def main(page: ft.Page):
         
         my_graph.visible = graph
         
-        
+        jumper_title.visible = jumper_menu
+        jumper_slider.visible = jumper_menu
+        jumper_play_btn.visible = jumper_menu
         rhythmic_btn.visible = game_menu
-        
+        jumper_btn.visible = game_menu
         send_custom_btn.visible = rhythm_game
 
         cycles_btn.visible = rhythm_game
@@ -330,7 +319,6 @@ def main(page: ft.Page):
         page.update()
 
     my_graph = ft.Image(src="historical_progress_graph.png", visible=False, width=1200, height=900)
-    mygraph2 = ft.Image(src="history_report.png", visible=False, width=1200, height=900)
     
     show_btn = ft.ElevatedButton(content=ft.Text("📈 Show Graph", size=45), on_click=show_image, height=100, width=400)
     back_btn = ft.ElevatedButton(content=ft.Text("🏠", size=45), on_click=go_back, height=100, width=400, visible=False)
@@ -348,6 +336,44 @@ def main(page: ft.Page):
     amethyst_btn = ft.ElevatedButton(content=ft.Text("Amethyst", size=45), on_click=amethyst_play, height=90, width=400)
     score_text = ft.Text(f"Score: {tracker.current_total}", size=135)
     delete_btn = ft.ElevatedButton(content=ft.Text("Delete Data", size=45), on_click=delete_data, bgcolor=ft.Colors.BLACK, height=100, width=400)
+    def open_jumper_menu(e):
+        toggle_visibility(jumper_menu=True)
+
+    jumper_btn = ft.ElevatedButton(
+        content=ft.Text("Jumper", size=45), 
+        on_click=open_jumper_menu, 
+        height=90, 
+        width=400,
+        visible=False
+    )
+    jumper_title = ft.Text("Jumper Difficulty", size=40, visible=False)
+    
+    jumper_slider = ft.Slider(
+        min=0.0, 
+        max=2.0, 
+        value=1.92, 
+        divisions=200, 
+        label="{value}", 
+        width=400,
+        visible=False
+    )
+
+    async def save_and_play_jumper(e):
+        selected_difficulty = round(jumper_slider.value, 2)
+        
+        with open("difficulty.txt", "w") as f:
+            f.write(str(selected_difficulty))
+        print(f"Saved difficulty {selected_difficulty} to difficulty.txt")
+
+        await audio.pause()
+        
+        await create_subprocess_exec('python', 'hori.py', str(selected_difficulty), "Back On Track")
+
+    jumper_play_btn = ft.ElevatedButton(
+        "Save & Play", 
+        on_click=save_and_play_jumper, 
+        visible=False
+    )
     page.add(
         header_text, 
         show_btn, 
@@ -371,7 +397,10 @@ def main(page: ft.Page):
         hexagon_btn,
         electrodynamix_btn,
         score_text,
-        
+        jumper_btn,
+        jumper_title,
+        jumper_slider,
+        jumper_play_btn,
     )
 
 
