@@ -14,7 +14,7 @@ MODEL_PATH = 'temp/yolo11n-pose.engine'
 LANE_COUNT = 12
 with open('difficulty.txt', 'r') as f:
     content = f.read()
-    content_int = int(float(content))
+    content_int = float(content)
     print(content_int)
 
 SENSITIVITY = 2.00 - content_int 
