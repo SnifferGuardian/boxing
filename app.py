@@ -120,6 +120,7 @@ def main(page: ft.Page):
 
     def go_back(e):
         toggle_visibility(main=True)
+    
     async def cycles_play(e):
         tracker.reset()
         await off_send(None)  
@@ -282,8 +283,18 @@ def main(page: ft.Page):
                     print(f"Warning: Ignored non-numeric serial data: '{input_str}'")    
     tracker = ScoreTracker()
 
-    def toggle_visibility(main=False, ports_view=False, graph=False, game_menu=False, rhythm_game=False, jumper_menu=False):
-       
+    def toggle_visibility(main=False, ports_view=False, graph=False, game_menu=False, rhythm_game=False, jumper_menu=False, jump_menu=False):
+        jumper_title.visible = jumper_menu
+        jumper_slider.visible = jumper_menu
+        jumper_play_btn.visible = jumper_menu
+    
+        jump_title.visible = jump_menu
+        jump_slider.visible = jump_menu
+        jump_play_btn.visible = jump_menu
+
+        rhythmic_btn.visible = game_menu
+        jumper_btn.visible = game_menu
+        jump_btn.visible = game_menu 
         header_text.visible = main
         show_btn.visible = main
         port_btn.visible = main
@@ -338,7 +349,42 @@ def main(page: ft.Page):
     delete_btn = ft.ElevatedButton(content=ft.Text("Delete Data", size=45), on_click=delete_data, bgcolor=ft.Colors.BLACK, height=100, width=400)
     def open_jumper_menu(e):
         toggle_visibility(jumper_menu=True)
+    def open_jump_menu(e):
+        toggle_visibility(jump_menu=True) 
 
+    jump_btn = ft.ElevatedButton(
+        content=ft.Text("Jump", size=45), 
+        on_click=open_jump_menu, 
+        height=90, 
+        width=400,
+        visible=False
+    )
+
+    jump_title = ft.Text("Jump Difficulty", size=40, visible=False)
+
+    jump_slider = ft.Slider(
+        min=0.0, 
+        max=2.0, 
+        value=1.5, 
+        divisions=200, 
+        label="{value}", 
+        width=400,
+        visible=False
+    )
+
+    async def save_and_play_jump(e):
+        selected_difficulty = round(jump_slider.value, 2)
+        with open("difficulty.txt", "w") as f:
+            f.write(str(selected_difficulty))
+    
+        await audio.pause()
+        await create_subprocess_exec('python', 'jump.py', str(selected_difficulty))
+
+    jump_play_btn = ft.ElevatedButton(
+        "Save & Play Jump", 
+        on_click=save_and_play_jump, 
+        visible=False   
+    )
     jumper_btn = ft.ElevatedButton(
         content=ft.Text("Jumper", size=45), 
         on_click=open_jumper_menu, 
@@ -401,6 +447,10 @@ def main(page: ft.Page):
         jumper_title,
         jumper_slider,
         jumper_play_btn,
+        jump_btn,
+        jump_title,
+        jump_slider,
+        jump_play_btn,
     )
 
 
