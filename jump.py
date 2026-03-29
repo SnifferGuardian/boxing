@@ -23,7 +23,7 @@ try:
 except:
     content_int = 1.0
 
-SENSITIVITY = 2.00 - content_int 
+SENSITIVITY = 0.08#2.00 - content_int 
 HOP = 128
 OFFSET = 0.06 
 

@@ -353,14 +353,14 @@ def main(page: ft.Page):
         toggle_visibility(jump_menu=True) 
 
     jump_btn = ft.ElevatedButton(
-        content=ft.Text("Jump", size=45), 
+        content=ft.Text("UFO", size=45), 
         on_click=open_jump_menu, 
         height=90, 
         width=400,
         visible=False
     )
 
-    jump_title = ft.Text("Jump Difficulty", size=40, visible=False)
+    jump_title = ft.Text("Difficulty", size=40, visible=False)
 
     jump_slider = ft.Slider(
         min=0.0, 
@@ -381,7 +381,7 @@ def main(page: ft.Page):
         await create_subprocess_exec('python', 'jump.py', str(selected_difficulty))
 
     jump_play_btn = ft.ElevatedButton(
-        "Save & Play Jump", 
+        "play", 
         on_click=save_and_play_jump, 
         visible=False   
     )
@@ -416,7 +416,7 @@ def main(page: ft.Page):
         await create_subprocess_exec('python', 'hori.py', str(selected_difficulty), "Back On Track")
 
     jumper_play_btn = ft.ElevatedButton(
-        "Save & Play", 
+        "play", 
         on_click=save_and_play_jumper, 
         visible=False
     )
