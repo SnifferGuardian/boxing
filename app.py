@@ -201,7 +201,7 @@ def main(page: ft.Page):
         await off_send(None)  
         time.sleep(0.2)
         url = r"GeometryDash\Amethyst.mp3"
-        bpm = 166
+        bpm = 41.5        #166
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
         audio.src = url
@@ -236,6 +236,18 @@ def main(page: ft.Page):
         with open("temp/avg.txt", 'w') as f:
             f.write("")
         with open("temp/exvg.txt", 'w') as f:
+            f.write("")
+        with open("graph/UFO/1.txt", 'w') as f:
+            f.write("")
+        with open("graph/UFO/2.txt", 'w') as f:
+            f.write("")
+        with open("graph/Ship/coin.txt", 'w') as f:
+            f.write("")
+        with open("graph/Ship/hit.txt", 'w') as f:
+            f.write("")
+        with open("graph/2D/coin2.txt", 'w') as f:
+            f.write("")
+        with open("graph/2D/hit2.txt", 'w') as f:
             f.write("")
     class ScoreTracker:
         def __init__(self):

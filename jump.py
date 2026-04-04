@@ -13,7 +13,7 @@ with open('difficulty.txt', 'r') as f:
     content_int = float(content)
     print(content_int)
 
-AUDIO_FILE = 'GeometryDash/Back On Track.mp3'  
+AUDIO_FILE = 'GeometryDash/Amethyst.mp3'  
 MODEL_PATH = 'temp/yolo11n-pose.engine'  
 LANE_COUNT = 12
 
@@ -23,7 +23,7 @@ try:
 except:
     content_int = 1.0
 
-SENSITIVITY = 0.08#2.00 - content_int 
+SENSITIVITY = 2.00 - content_int 
 HOP = 128
 OFFSET = 0.06 
 
@@ -229,8 +229,8 @@ def show_analytics():
     dodge_pc = (stats["dodged"] / total_obs * 100) if total_obs > 0 else 0
     final_score = SCORE
 
-    with open("1.txt", "a") as f: f.write(f"{final_score}\n")
-    with open("2.txt", "a") as f: f.write(f"{dodge_pc}\n")
+    with open("graph/UFO/1.txt", "a") as f: f.write(f"{final_score}\n")
+    with open("graph/UFO/2.txt", "a") as f: f.write(f"{dodge_pc}\n")
 
     def load_data(file):
         data = []
@@ -240,8 +240,8 @@ def show_analytics():
                     if line.strip(): data.append(float(line.strip()))
         return data
 
-    history_1 = load_data("1.txt")
-    history_2 = load_data("2.txt")
+    history_1 = load_data("graph/UFO/1.txt")
+    history_2 = load_data("graph/UFO/2.txt")
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
     fig.canvas.manager.set_window_title('Historical Analytics')

@@ -9,28 +9,30 @@ import os
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 
-AUDIO_FILE = 'GeometryDash/3-05. Electroman Adventures.mp3'  
+AUDIO_FILE = 'GeometryDash/Amethyst.mp3'  
 MODEL_PATH = 'temp/yolo11n-pose.engine'  
-LANE_COUNT = 12
-with open('difficulty.txt', 'r') as f:
-    content = f.read()
-    content_int = float(content)
-    print(content_int)
 
-SENSITIVITY = 2.00 - content_int 
+try:
+    with open('difficulty.txt', 'r') as f:
+        content_int = float(f.read())
+        print(f"Difficulty loaded: {content_int}")
+except FileNotFoundError:
+    content_int = 1.0
+    print("difficulty.txt not found, defaulting to 1.0")
+
+SENSITIVITY = 0.35#2.00 - content_int 
 
 HOP = 128
 OFFSET = 0.06 
 
-BASE_SHOOT_TIME = 0.5   
+BASE_SHOOT_TIME = 0.7   
 SHOOT_TIME = BASE_SHOOT_TIME 
 width, height = 2000, 1000 
-CIRCLE_SIZE = 50   
+CIRCLE_SIZE = 60        
 HIT_WINDOW = 0.15
 PERFECT_WINDOW = 0.05
 RIPPLE_DURATION = 0.5 
 EXPLOSION_DURATION = 0.4
-HOLD_THRESHOLD = 0.2 
 
 INACTIVITY_LIMIT = 3.0       
 PENALTY_INTERVAL = 0.1       
@@ -50,29 +52,41 @@ stats = {
     "points_log": []  
 }
 
-TRACK_INDICES = [9, 10, 13, 14] 
+TRACK_INDICES = [9, 10] # 9: Left Wrist, 10: Right Wrist
 
 print("Analyzing audio... please wait.")
 y, sr = librosa.load(AUDIO_FILE)
 onset_env = librosa.onset.onset_strength(y=y, sr=sr, hop_length=HOP)
 peaks = librosa.util.peak_pick(onset_env, pre_max=2, post_max=2, pre_avg=3, post_avg=3, delta=SENSITIVITY, wait=5)
 beat_times = librosa.frames_to_time(peaks, sr=sr, hop_length=HOP)
-chroma = librosa.feature.chroma_stft(y=y, sr=sr, hop_length=HOP)
 
 notes = []
 for i in range(len(peaks)):
-    f = min(peaks[i], chroma.shape[1] - 1)
-    lane = np.argmax(chroma[:, f])
     t = beat_times[i]
-    is_penalty = random.random() < 0.25 
-    is_hold = False
-    duration = 0
-    if not is_penalty and i < len(beat_times) - 1:
-        diff = beat_times[i+1] - t
-        if diff < HOLD_THRESHOLD:
-            is_hold = True
-            duration = diff
-    notes.append({'time': t, 'lane': lane, 'is_hold': is_hold, 'duration': duration, 'is_penalty': is_penalty})
+    
+    # 0 = Left/Yellow, 1 = Right/Blue, 2 = Danger/Red
+    rand_val = random.random()
+    if rand_val < 0.15:
+        orb_type = 2 
+    elif rand_val < 0.575:
+        orb_type = 0 
+    else:
+        orb_type = 1 
+
+    # Hemisphere Logic
+    pad = 120
+    mid_x = width // 2
+    
+    if orb_type == 0: # Left / Yellow
+        nx = random.randint(pad, mid_x)
+    elif orb_type == 1: # Right / Blue
+        nx = random.randint(mid_x, width - pad)
+    else: # Danger / Red (Can spawn anywhere)
+        nx = random.randint(pad, width - pad)
+
+    ny = random.randint(pad, height - pad)
+
+    notes.append({'time': t, 'x': nx, 'y': ny, 'type': orb_type})
 
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
@@ -83,24 +97,23 @@ def generate_tone(freq):
     audio = (wave * 32767).astype(np.int16)
     return pygame.sndarray.make_sound(np.repeat(audio[:, np.newaxis], 2, axis=1))
 
-lane_sounds = [generate_tone(440 * (2 ** ((i - 9) / 12))) for i in range(12)]
-
-SPAWN_X = -50               
-HIT_X = width - 200         
+tone_left = generate_tone(440)     # A4
+tone_right = generate_tone(523.25) # C5
+tone_danger = generate_tone(200)   # Low tone
 
 window_name = "chaos"
 cv2.namedWindow(window_name)
 
-def map_to_line(x, y, cam_w, cam_h, gravity_reversed=False):
-    y_percent = y / cam_h
-    gy = (1.0 - y_percent) * height if gravity_reversed else y_percent * height
-    return int(HIT_X), int(gy)
+def map_to_screen(x, y, cam_w, cam_h, reverse_x=True, reverse_y=False):
+    sx = int((1.0 - x / cam_w) * width) if reverse_x else int((x / cam_w) * width)
+    sy = int((1.0 - y / cam_h) * height) if reverse_y else int((y / cam_h) * height)
+    return sx, sy
 
 model = YOLO(MODEL_PATH)
 cap = cv2.VideoCapture(0)
 pygame.mixer.music.load(AUDIO_FILE)
 
-active_bullets = []
+active_orbs = []
 active_ripples = []
 active_explosions = []
 feedback_messages = [] 
@@ -129,7 +142,6 @@ try:
         cam_h, cam_w, _ = frame_cam.shape
         
         results = model(frame_cam, verbose=False, stream=True)
-        tracked_points = []
         current_wrists = {}
 
         for r in results:
@@ -141,9 +153,8 @@ try:
                         if idx < len(person):
                             kp = person[idx]
                             if kp[0] > 0 and kp[1] > 0:
-                                screen_pos = map_to_line(kp[0], kp[1], cam_w, cam_h, is_gravity_reversed)
-                                tracked_points.append(screen_pos)
-                                if idx in [9, 10]: current_wrists[idx] = (kp[0], kp[1])
+                                screen_pos = map_to_screen(kp[0], kp[1], cam_w, cam_h, reverse_x=True, reverse_y=is_gravity_reversed)
+                                current_wrists[idx] = screen_pos
 
         moved_significantly = False
         for idx in [9, 10]:
@@ -164,7 +175,6 @@ try:
                 feedback_messages.append(["IDLE PENALTY!", (0, 0, 255), elapsed])
 
         frame = np.zeros((height, width, 3), dtype=np.uint8)
-        cv2.line(frame, (HIT_X, 0), (HIT_X, height), (100, 100, 100), 8)
         cv2.putText(frame, f"SCORE: {SCORE}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
 
         active_mods = []
@@ -177,18 +187,23 @@ try:
         if idle_time > 1.5:
             cv2.putText(frame, "MOVE!", (width//2 - 100, 100), cv2.FONT_HERSHEY_SIMPLEX, 3.0, (0, 0, 255), 8)
 
-        player_color = (0, 255, 255) if is_gravity_reversed else (255, 0, 255)
-        for (tx, ty) in tracked_points:
-            cv2.circle(frame, (tx, ty), 35, player_color, -1)
-            cv2.circle(frame, (tx, ty), 40, (255, 255, 255), 2)
+        # Draw Wrists
+        if 9 in current_wrists:
+            lx, ly = current_wrists[9]
+            cv2.circle(frame, (lx, ly), 35, (0, 255, 255), -1) # Yellow for Left Hand
+            cv2.circle(frame, (lx, ly), 40, (255, 255, 255), 2)
+        if 10 in current_wrists:
+            rx, ry = current_wrists[10]
+            cv2.circle(frame, (rx, ry), 35, (255, 0, 0), -1)   # Blue for Right Hand
+            cv2.circle(frame, (rx, ry), 40, (255, 255, 255), 2)
 
         new_ripples = []
-        for rx, ry, lane, r_start in active_ripples:
+        for rx, ry, color, r_start in active_ripples:
             r_prog = (elapsed - r_start) / RIPPLE_DURATION
             if r_prog < 1.0:
                 alpha = 1.0 - r_prog
-                cv2.circle(frame, (rx, ry), int(150 * r_prog), (255, 255, 255), max(1, int(15 * alpha)))
-                new_ripples.append([rx, ry, lane, r_start])
+                cv2.circle(frame, (rx, ry), int(150 * r_prog), color, max(1, int(15 * alpha)))
+                new_ripples.append([rx, ry, color, r_start])
         active_ripples = new_ripples
 
         new_explosions = []
@@ -204,76 +219,88 @@ try:
         if beat_index < len(notes):
             n = notes[beat_index]
             if elapsed >= (n['time'] - SHOOT_TIME - OFFSET):
-                active_bullets.append([n['lane'], elapsed, 0, n['is_hold'], n['duration'], n['is_penalty']])
+                active_orbs.append([n['x'], n['y'], elapsed, 0, n['type']])
                 beat_index += 1
 
-        new_bullets = []
-        for bullet in active_bullets:
-            lane, start_time, state, is_hold, dur, is_penalty = bullet
-            bullet_elapsed = elapsed - start_time
-            progress = bullet_elapsed / SHOOT_TIME
-            bx = int(SPAWN_X + (progress * (HIT_X - SPAWN_X)))
-            by = int((lane + 0.5) * (height / LANE_COUNT))
+        new_orbs = []
+        for orb in active_orbs:
+            ox, oy, start_time, state, orb_type = orb
+            orb_elapsed = elapsed - start_time
+            progress = orb_elapsed / SHOOT_TIME
 
-            is_touching = any(abs(by - ty) < (CIRCLE_SIZE + 40) and abs(bx - tx) < 80 for (tx, ty) in tracked_points)
+            dist_left = math.inf
+            dist_right = math.inf
+            if 9 in current_wrists:
+                lw = current_wrists[9]
+                dist_left = math.hypot(lw[0]-ox, lw[1]-oy)
+            if 10 in current_wrists:
+                rw = current_wrists[10]
+                dist_right = math.hypot(rw[0]-ox, rw[1]-oy)
+
+            touching_left = dist_left < (CIRCLE_SIZE + 30)
+            touching_right = dist_right < (CIRCLE_SIZE + 30)
+            any_touching = touching_left or touching_right
+
+            color = (0, 255, 255) if orb_type == 0 else ((255, 0, 0) if orb_type == 1 else (0, 0, 255))
 
             if state == 0: 
-                delta = bullet_elapsed - SHOOT_TIME
-                if abs(delta) < HIT_WINDOW and is_touching:
-                    if is_penalty:
+                delta = orb_elapsed - SHOOT_TIME
+                
+                approach_radius = max(CIRCLE_SIZE, int(CIRCLE_SIZE + (1.0 - progress) * 150))
+                cv2.circle(frame, (ox, oy), CIRCLE_SIZE, color, -1)
+                if progress <= 1.0:
+                    cv2.circle(frame, (ox, oy), approach_radius, color, 3)
+
+                if abs(delta) < HIT_WINDOW:
+                    hit_valid = False
+                    if orb_type == 0 and touching_left: hit_valid = True
+                    elif orb_type == 1 and touching_right: hit_valid = True
+                    elif orb_type == 2 and any_touching:
                         effect = random.choice(["flash", "speed", "slow", "grav"])
                         if effect == "flash": flash_end_time = now + 0.5
                         elif effect == "speed": speed_end_time = now + 5.0
                         elif effect == "slow": slow_end_time = now + 15.0
                         elif effect == "grav": gravity_end_time = now + 6.0
                         stats["danger_hit"] += 1
+                        SCORE += PENALTY_AMOUNT
                         feedback_messages.append(["DANGER HIT!", (0, 0, 255), elapsed])
-                        active_explosions.append([bx, by, elapsed])
-                        bullet[2] = 2 
-                    else:
+                        active_explosions.append([ox, oy, elapsed])
+                        tone_danger.play()
+                        orb[3] = 2 
+                        continue
+
+                    if hit_valid:
                         is_p = abs(delta) <= PERFECT_WINDOW
                         pts = POINTS_PERFECT if is_p else POINTS_GOOD
                         SCORE += pts
                         stats["hits"] += 1
                         stats["points_log"].append(pts)
                         feedback_messages.append(["PERFECT" if is_p else "GOOD", (0, 255, 0) if is_p else (0, 255, 255), elapsed])
-                        lane_sounds[lane].play()
-                        active_ripples.append([bx, by, lane, elapsed])
-                        bullet[2] = 3 if is_hold else 1
+                        if orb_type == 0: tone_left.play()
+                        else: tone_right.play()
+                        active_ripples.append([ox, oy, color, elapsed])
+                        orb[3] = 1 
+
                 elif progress > (1.0 + HIT_WINDOW):
-                    if not is_penalty: 
+                    if orb_type != 2: 
                         SCORE += POINTS_MISS
                         stats["misses"] += 1
                         stats["points_log"].append(POINTS_MISS)
                         feedback_messages.append(["MISS", (0, 0, 150), elapsed])
                     else:
                         stats["danger_dodged"] += 1
-                    bullet[2] = 2
-            elif state == 3: 
-                if not is_touching: 
-                    feedback_messages.append(["DROPPED!", (0, 165, 255), elapsed])
-                    bullet[2] = 2
-                elif progress > (1.0 + (dur / SHOOT_TIME)): 
-                    SCORE += 50
-                    stats["points_log"].append(50)
-                    feedback_messages.append(["HELD!", (255, 255, 0), elapsed])
-                    bullet[2] = 1
+                    orb[3] = 2
 
-            if bullet[2] in [0, 3]:
-                b_color = (0, 0, 255) if is_penalty else ((0, 255, 255) if state == 3 else (255, 200, 0))
-                if is_hold:
-                    tx_tail = int(SPAWN_X + (max(0, progress - 0.2) * (HIT_X - SPAWN_X)))
-                    cv2.line(frame, (bx, by), (tx_tail, by), b_color, 95)
-                cv2.circle(frame, (bx, by), CIRCLE_SIZE, b_color, -1)
-                new_bullets.append(bullet)
-        active_bullets = new_bullets
+            if orb[3] == 0:
+                new_orbs.append(orb)
+        active_orbs = new_orbs
 
         new_fb = []
         for msg, color, spawn in feedback_messages:
             f_el = elapsed - spawn
             if f_el < 0.8:
                 alpha = 1.0 - (f_el/0.8)
-                cv2.putText(frame, msg, (HIT_X - 450, height // 2 + random.randint(-10,10)), 
+                cv2.putText(frame, msg, (width // 2 - 150, height // 2 + random.randint(-10,10)), 
                             cv2.FONT_HERSHEY_SIMPLEX, 1.8, (int(color[0]*alpha), int(color[1]*alpha), int(color[2]*alpha)), 5)
                 new_fb.append([msg, color, spawn])
         feedback_messages = new_fb
@@ -295,8 +322,8 @@ def show_analytics():
     dodge_pc = (stats["danger_dodged"] / total_danger * 100) if total_danger > 0 else 0
     avg_pts_per_orb = np.mean(stats["points_log"]) if stats["points_log"] else 0
 
-    with open("graph/Ship/coin.txt", "a") as f: f.write(f"{avg_pts_per_orb}\n")
-    with open("graph/Ship/hit.txt", "a") as f: f.write(f"{hit_pc}\n")
+    with open("graph/2D/coin2.txt", "a") as f: f.write(f"{avg_pts_per_orb}\n")
+    with open("graph/2D/hit2.txt", "a") as f: f.write(f"{hit_pc}\n")
 
     def load_data(file):
         data = []
@@ -306,8 +333,8 @@ def show_analytics():
                     if line.strip(): data.append(float(line.strip()))
         return data
 
-    coin_history = load_data("graph/Ship/coin.txt")
-    hit_history = load_data("graph/Ship/hit.txt")
+    coin_history = load_data("graph/2D/coin2.txt")
+    hit_history = load_data("graph/2D/hit2.txt")
 
     fig, axes = plt.subplots(2, 2, figsize=(15, 10))
     fig.canvas.manager.set_window_title('Game Analytics & History')
