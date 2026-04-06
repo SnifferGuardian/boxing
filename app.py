@@ -217,19 +217,31 @@ def main(page: ft.Page):
         await power_calc()
 
     def score():
+        last_cmd = ""
         while True:
+            # 1. Read from Arduino (Reactions & Powers)
             if ser and ser.in_waiting > 0:
                 try:
                     line = ser.readline().decode('utf-8').strip()
-                    with open("cmd.txt", 'r') as f:
-                        cmd = f.read().strip()
-                        ser.write(f"{cmd}".encode())
                     if line:
                         tracker.update(line)
                 except Exception as e:
                     print(f"Serial Read Error: {e}")
-            time.sleep(0.01) 
-
+            
+            # 2. Check for new commands from auto.py independently
+            try:
+                if os.path.exists("cmd.txt"):
+                    with open("cmd.txt", 'r') as f:
+                        cmd = f.read().strip()
+                    
+                    # Only send if the command is new and not empty
+                    if cmd and cmd != last_cmd and ser:
+                        ser.write(f"{cmd}\n".encode())
+                        last_cmd = cmd 
+            except Exception as e:
+                pass # Ignore temporary file read conflicts
+            
+            time.sleep(0.01)
     async def jumper_play(e):
         print("Launching Jumper Mode...")
         await audio.pause()

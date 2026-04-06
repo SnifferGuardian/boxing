@@ -8,7 +8,7 @@ import random
 
 AUDIO_FILE = 'GeometryDash/Amethyst.mp3'
 LANE_COUNT = 12
-SENSITIVITY = 0.04
+SENSITIVITY = 0.1
 HOP = 96
 OFFSET = 0.06 
 SHOOT_TIME = 1.0   
@@ -79,7 +79,7 @@ try:
                 active_bullets.append([lane_assignments[beat_index], elapsed, False])
                 beat_index += 1
                 choice = random.randint(1, 4)
-                randpin = random.randint(1, 4)
+                randpin = random.randint(0, 3)
                 if choice == 1:
                     with open('cmd.txt', 'w') as f:
                         f.write(f"{randpin},G,700\n")
