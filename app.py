@@ -26,7 +26,7 @@ stop_signal_path = os.path.join(script_dir, "temp/stop_signal.txt")
 
 url = r"C:\Users\Matt\Desktop\yolopose\GeometryDash\1-05. Cycles.mp3"
 try:
-    ser = serial.Serial('COM13', 9600, timeout=1) 
+    ser = serial.Serial('COM13', 115200, timeout=1) 
 except Exception as e:
     print(f"Serial Error: {e}")
     ser = None
@@ -125,6 +125,7 @@ def main(page: ft.Page):
         tracker.reset()
         await off_send(None)  
         await create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'auto.py')
         time.sleep(0.2)
         url= r"GeometryDash\1-05. Cycles.mp3"
         bpm = 140  
@@ -137,6 +138,8 @@ def main(page: ft.Page):
         
     async def electroman_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
+        
+        await create_subprocess_exec('python', 'auto.py')
         tracker.reset()
         await off_send(None) 
         time.sleep(0.2)
@@ -149,6 +152,7 @@ def main(page: ft.Page):
         await power_calc()
     async def geometrical_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'auto.py')
         tracker.reset()
         await off_send(None)  
         time.sleep(0.2)
@@ -161,6 +165,7 @@ def main(page: ft.Page):
         await power_calc()
     async def hexagon_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'auto.py')
         tracker.reset()
         await off_send(None)
         time.sleep(0.2)
@@ -173,6 +178,7 @@ def main(page: ft.Page):
         await power_calc()  
     async def electrodynamix_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'auto.py')
         tracker.reset()
         await off_send(None)  
         time.sleep(0.2)
@@ -185,6 +191,7 @@ def main(page: ft.Page):
         await power_calc()
     async def tidalwave_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'auto.py')
         tracker.reset()
         await off_send(None)  
         time.sleep(0.2)
@@ -197,6 +204,7 @@ def main(page: ft.Page):
         await power_calc()
     async def amethyst_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
+        await create_subprocess_exec('python', 'auto.py')
         tracker.reset()
         await off_send(None)  
         time.sleep(0.2)
@@ -213,6 +221,9 @@ def main(page: ft.Page):
             if ser and ser.in_waiting > 0:
                 try:
                     line = ser.readline().decode('utf-8').strip()
+                    with open("cmd.txt", 'r') as f:
+                        cmd = f.read().strip()
+                        ser.write(f"{cmd}".encode())
                     if line:
                         tracker.update(line)
                 except Exception as e:

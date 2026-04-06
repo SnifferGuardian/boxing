@@ -4,14 +4,22 @@ import pygame
 import time
 import cv2
 import math
+import random
 
-AUDIO_FILE = 'GeometryDash/flamewall3.mp3'
+AUDIO_FILE = 'GeometryDash/Amethyst.mp3'
 LANE_COUNT = 12
 SENSITIVITY = 0.04
 HOP = 96
 OFFSET = 0.06 
 SHOOT_TIME = 1.0   
 CIRCLE_SIZE = 70   
+
+try:
+    ser = serial.Serial('COM13', 115200, timeout=1) 
+except Exception as e:
+    print(f"Serial Error: {e}")
+    ser = None
+
 
 y, sr = librosa.load(AUDIO_FILE)
 onset_env = librosa.onset.onset_strength(y=y, sr=sr, hop_length=HOP)
@@ -48,7 +56,7 @@ def generate_square_tone(freq):
 #     return pygame.sndarray.make_sound(np.repeat(audio[:, np.newaxis], 2, axis=1))
 lane_sounds = [generate_square_tone(440 * (2 ** ((i - 9) / 12))) for i in range(12)]
 pygame.mixer.music.load(AUDIO_FILE)
-pygame.mixer.music.set_volume(0.5) 
+pygame.mixer.music.set_volume(0.0) 
 width, height = 1000, 1000
 center = (width // 2, height // 2)
 max_radius = width // 2 - 80
@@ -70,6 +78,14 @@ try:
             if elapsed >= (beat_times[beat_index] - SHOOT_TIME - OFFSET):
                 active_bullets.append([lane_assignments[beat_index], elapsed, False])
                 beat_index += 1
+                choice = random.randint(1, 4)
+                randpin = random.randint(1, 4)
+                if choice == 1:
+                    with open('cmd.txt', 'w') as f:
+                        f.write(f"{randpin},G,700\n")
+                else:
+                    with open('cmd.txt', 'w') as f:
+                        f.write(f"{randpin},G,700\n")
 
         frame = np.zeros((height, width, 3), dtype=np.uint8)
         
