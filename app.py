@@ -127,7 +127,7 @@ def main(page: ft.Page):
         await create_subprocess_exec('python', 'temp/pose.py')
         await create_subprocess_exec('python', 'auto.py')
         time.sleep(0.2)
-        url= r"GeometryDash\1-05. Cycles.mp3"
+        url= r"GeometryDash\cycles.mp3"
         bpm = 140  
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())  
@@ -143,7 +143,7 @@ def main(page: ft.Page):
         tracker.reset()
         await off_send(None) 
         time.sleep(0.2)
-        url = r"GeometryDash\3-05. Electroman Adventures.mp3"
+        url = r"GeometryDash\electroman.mp3"
         bpm = 170  
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())  
@@ -156,7 +156,7 @@ def main(page: ft.Page):
         tracker.reset()
         await off_send(None)  
         time.sleep(0.2)
-        url = r"GeometryDash\5-03. Geometrical Dominator.mp3"
+        url = r"GeometryDash\geometry.mp3"
         bpm = 148  
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
@@ -169,7 +169,7 @@ def main(page: ft.Page):
         tracker.reset()
         await off_send(None)
         time.sleep(0.2)
-        url = r"GeometryDash\4-09. Hexagon Force.mp3"
+        url = r"GeometryDash\hexagon.mp3"
         bpm = 81  
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
@@ -182,7 +182,7 @@ def main(page: ft.Page):
         tracker.reset()
         await off_send(None)  
         time.sleep(0.2)
-        url = r"GeometryDash\Electrodynamix.mp3"
+        url = r"GeometryDash\electrodynamix.mp3"
         bpm = 127  
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
@@ -195,7 +195,7 @@ def main(page: ft.Page):
         tracker.reset()
         await off_send(None)  
         time.sleep(0.2)
-        url = r"GeometryDash\Dion_Timmer_-_Shiawase_(mp3.pm).mp3"
+        url = r"GeometryDash\tidalwave.mp3"
         bpm = 141 
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
@@ -208,7 +208,7 @@ def main(page: ft.Page):
         tracker.reset()
         await off_send(None)  
         time.sleep(0.2)
-        url = r"GeometryDash\Amethyst.mp3"
+        url = r"GeometryDash\amethyst.mp3"
         bpm = 41.5        #166
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())

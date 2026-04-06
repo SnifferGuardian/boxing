@@ -31,7 +31,7 @@ void setup() {
     rings[i].setBrightness(100);
     rings[i].show(); 
   }
-  Serial.println("SYSTEM_READY"); // Let the computer know we are online
+  Serial.println("SYSTEM_READY"); 
 }
 
 void setRingColor(int targetIndex, uint32_t color) {
@@ -42,7 +42,6 @@ void setRingColor(int targetIndex, uint32_t color) {
 }
 
 void loop() {
-  // 1. Parse Incoming Serial Data
   if (Serial.available() > 0 && !isWaitingForHit) {
     String input = Serial.readStringUntil('\n');
     input.trim();
@@ -56,13 +55,6 @@ void loop() {
       char colorChar = colorStr[0];
       testDuration = input.substring(secondComma + 1).toInt();
 
-      // // --- DEBUG OUTPUT ---
-      // Serial.print("PARSED_CMD: Target=");
-      // Serial.print(activeTarget);
-      // Serial.print(" | Color=");
-      // Serial.print(colorChar);
-      // Serial.print(" | Duration=");
-      // Serial.println(testDuration);
 
       if(activeTarget >= 0 && activeTarget < 4) {
         uint32_t targetColor = rings[activeTarget].Color(0, 0, 0);
