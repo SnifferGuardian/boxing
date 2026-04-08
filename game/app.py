@@ -32,19 +32,13 @@ except Exception as e:
     print(f"Serial Error: {e}")
     ser = None
 
-bpm_input = ft.TextField(label="Enter BPM", width=100, visible=False)
 
-def change_bpm(e):
-    if ser and bpm_input.value:
-        ser.write(f"{bpm_input.value}\n".encode())
 
-send_custom_btn = ft.ElevatedButton("Send BPM", on_click=change_bpm, visible=False)
 
 def main(page: ft.Page):
     page.title = "Rhythmic Box Controller"
     
     header_text = ft.Text("What do you want to do?", theme_style=ft.TextThemeStyle.DISPLAY_LARGE)
-    selec_text = ft.Text("Select the ports used down below!", theme_style=ft.TextThemeStyle.DISPLAY_MEDIUM, visible=False)
     
     
     ports = [
@@ -109,9 +103,6 @@ def main(page: ft.Page):
         print("Sync Complete.")
     def show_image(e):
         toggle_visibility(graph=True)
-
-    def set_ports(e):
-        toggle_visibility(ports_view=True)
 
     def game_page(e):
         toggle_visibility(game_menu=True)
@@ -333,24 +324,19 @@ def main(page: ft.Page):
         jump_btn.visible = game_menu 
         header_text.visible = main
         show_btn.visible = main
-        port_btn.visible = main
         game_btn.visible = main
         off_btn.visible = main
         
         
-        selec_text.visible = ports_view
-        sync_btn.visible = ports_view
         for p in ports: p.visible = ports_view
         
         
-        my_graph.visible = graph
         
         jumper_title.visible = jumper_menu
         jumper_slider.visible = jumper_menu
         jumper_play_btn.visible = jumper_menu
         rhythmic_btn.visible = game_menu
         jumper_btn.visible = game_menu
-        send_custom_btn.visible = rhythm_game
 
         cycles_btn.visible = rhythm_game
         electroman_btn.visible = rhythm_game
@@ -359,18 +345,14 @@ def main(page: ft.Page):
         electrodynamix_btn.visible = rhythm_game
         score_text.visible = rhythm_game
         back_btn.visible = not main
-        bpm_input.visible = rhythm_game
         tidalwave_btn.visible = rhythm_game
         amethyst_btn.visible = rhythm_game
         delete_btn.visible = main
         page.update()
 
-    my_graph = ft.Image(src="historical_progress_graph.png", visible=False, width=1200, height=900)
     
     show_btn = ft.ElevatedButton(content=ft.Text("📈 Show Graph", size=45), on_click=show_image, height=100, width=400)
     back_btn = ft.ElevatedButton(content=ft.Text("🏠", size=45), on_click=go_back, height=100, width=400, visible=False)
-    port_btn = ft.ElevatedButton(content=ft.Text("⚙️ Port Setup", size=45), on_click=set_ports, height=100, width=400)
-    sync_btn = ft.ElevatedButton(content=ft.Text("Upload", size=45), on_click=send_inactive_ports, height=100, width=400, visible=False)
     off_btn = ft.ElevatedButton(content=ft.Text("🛑 Reset", size=45), on_click=off_send, bgcolor=ft.Colors.RED, height=100, width=400)
     game_btn = ft.ElevatedButton(content=ft.Text("🎮 Games?", size=45), on_click=game_page, height=100, width=400)
     rhythmic_btn = ft.ElevatedButton(content=ft.Text("🥊 Boxing!", size=45), on_click=rhythmic_game, visible=False, width=400)
@@ -459,18 +441,11 @@ def main(page: ft.Page):
     page.add(
         header_text, 
         show_btn, 
-        port_btn, 
         game_btn, 
         off_btn, 
         delete_btn,
         back_btn, 
-        my_graph, 
-        selec_text, 
-        *ports, 
-        sync_btn,
         rhythmic_btn,
-        #bpm_input, 
-        #send_custom_btn,
         tidalwave_btn,
         amethyst_btn,
         cycles_btn,
