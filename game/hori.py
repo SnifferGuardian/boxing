@@ -9,7 +9,7 @@ import os
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 
-AUDIO_FILE = 'GeometryDash/3-05. Electroman Adventures.mp3'  
+AUDIO_FILE = 'GeometryDash/amethyst.mp3'  
 MODEL_PATH = 'temp/yolo11n-pose.engine'  
 LANE_COUNT = 12
 with open('difficulty.txt', 'r') as f:

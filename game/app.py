@@ -25,7 +25,7 @@ history_plot_path = os.path.join(assets_dir, "history_report.png")
 stop_signal_path = os.path.join(script_dir, "temp/stop_signal.txt") 
 
 
-url = r"C:\Users\Matt\Desktop\yolopose\GeometryDash\1-05. Cycles.mp3"
+url = r"C:\Users\Matt\Desktop\game\yolopose\GeometryDash\1-05. Cycles.mp3"
 try:
     ser = serial.Serial('COM13', 115200, timeout=1) 
 except Exception as e:
