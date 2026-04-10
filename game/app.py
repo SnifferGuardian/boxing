@@ -310,7 +310,7 @@ def main(page: ft.Page):
                     print(f"Warning: Ignored non-numeric serial data: '{input_str}'")    
     tracker = ScoreTracker()
 
-    def toggle_visibility(main=False, ports_view=False, graph=False, game_menu=False, rhythm_game=False, jumper_menu=False, jump_menu=False):
+    def toggle_visibility(main=False, ports_view=False, graph=False, game_menu=False, rhythm_game=False, jumper_menu=False, jump_menu=False, flap_menu=False):
         jumper_title.visible = jumper_menu
         jumper_slider.visible = jumper_menu
         jumper_play_btn.visible = jumper_menu
@@ -319,25 +319,23 @@ def main(page: ft.Page):
         jump_slider.visible = jump_menu
         jump_play_btn.visible = jump_menu
 
+        # Add flap menu visibility toggles
+        flap_title.visible = flap_menu
+        flap_slider.visible = flap_menu
+        flap_play_btn.visible = flap_menu
+
         rhythmic_btn.visible = game_menu
         jumper_btn.visible = game_menu
         jump_btn.visible = game_menu 
+        flap_btn.visible = game_menu # Make sure Flap shows up in the games menu
+        
         header_text.visible = main
         show_btn.visible = main
         game_btn.visible = main
         off_btn.visible = main
         
-        
         for p in ports: p.visible = ports_view
         
-        
-        
-        jumper_title.visible = jumper_menu
-        jumper_slider.visible = jumper_menu
-        jumper_play_btn.visible = jumper_menu
-        rhythmic_btn.visible = game_menu
-        jumper_btn.visible = game_menu
-
         cycles_btn.visible = rhythm_game
         electroman_btn.visible = rhythm_game
         geometrical_btn.visible = rhythm_game
@@ -349,7 +347,6 @@ def main(page: ft.Page):
         amethyst_btn.visible = rhythm_game
         delete_btn.visible = main
         page.update()
-
     
     show_btn = ft.ElevatedButton(content=ft.Text("📈 Show Graph", size=45), on_click=show_image, height=100, width=400)
     back_btn = ft.ElevatedButton(content=ft.Text("🏠", size=45), on_click=go_back, height=100, width=400, visible=False)
@@ -369,7 +366,35 @@ def main(page: ft.Page):
         toggle_visibility(jumper_menu=True)
     def open_jump_menu(e):
         toggle_visibility(jump_menu=True) 
+        
+    def open_flap_menu(e):
+        toggle_visibility(flap_menu=True)
+    flap_title = ft.Text("Flappy Difficulty", size=40, visible=False)
 
+    flap_slider = ft.Slider(
+        min=0.0, 
+        max=2.0, 
+        value=1.5, 
+        divisions=200, 
+        label="{value}", 
+        width=400,
+        visible=False
+    )
+
+    async def save_and_play_flap(e):
+        selected_difficulty = round(flap_slider.value, 2)
+        with open("difficulty.txt", "w") as f:
+            f.write(str(selected_difficulty))
+    
+        await audio.pause()
+        # Executes flappy.py with the difficulty argument
+        await create_subprocess_exec('python3', 'flappy.py', str(selected_difficulty))
+
+    flap_play_btn = ft.ElevatedButton(
+        "play", 
+        on_click=save_and_play_flap, 
+        visible=False   
+    )
     jump_btn = ft.ElevatedButton(
         content=ft.Text("UFO", size=45), 
         on_click=open_jump_menu, 
@@ -377,7 +402,13 @@ def main(page: ft.Page):
         width=400,
         visible=False
     )
-
+    flap_btn = ft.ElevatedButton(
+        content=ft.Text("Flap", size=45),
+        on_click=open_flap_menu,
+        height=90,
+        width=400,
+        visible=False
+    )
     jump_title = ft.Text("Difficulty", size=40, visible=False)
 
     jump_slider = ft.Slider(
@@ -462,6 +493,10 @@ def main(page: ft.Page):
         jump_title,
         jump_slider,
         jump_play_btn,
+        flap_btn,
+        flap_title,
+        flap_slider,
+        flap_play_btn,
     )
 
 
