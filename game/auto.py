@@ -6,7 +6,7 @@ import cv2
 import math
 import random
 
-AUDIO_FILE = 'GeometryDash/Amethyst.mp3'
+AUDIO_FILE = 'GeometryDash/amethyst.mp3'
 LANE_COUNT = 12
 SENSITIVITY = 0.1
 HOP = 96
@@ -56,7 +56,7 @@ def generate_square_tone(freq):
 #     return pygame.sndarray.make_sound(np.repeat(audio[:, np.newaxis], 2, axis=1))
 lane_sounds = [generate_square_tone(440 * (2 ** ((i - 9) / 12))) for i in range(12)]
 pygame.mixer.music.load(AUDIO_FILE)
-pygame.mixer.music.set_volume(0.0) 
+pygame.mixer.music.set_volume(1) 
 width, height = 1000, 1000
 center = (width // 2, height // 2)
 max_radius = width // 2 - 80
@@ -108,7 +108,7 @@ try:
                 y = int(center[1] + curr_dist * math.sin(angle))
                 
                 if progress >= 1.0 and not has_played:
-                    lane_sounds[lane].play()
+                    #lane_sounds[lane].play()
                     bullet[2] = True 
                     ring_flash = 255 
                 b = int(255 * (1 - lane/12) * progress)

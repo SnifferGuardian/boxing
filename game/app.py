@@ -101,8 +101,6 @@ def main(page: ft.Page):
                 await asyncio.sleep(0.1) 
 
         print("Sync Complete.")
-    def show_image(e):
-        toggle_visibility(graph=True)
 
     def game_page(e):
         toggle_visibility(game_menu=True)
@@ -125,7 +123,7 @@ def main(page: ft.Page):
             ser.write(f"{bpm}\n".encode())  
         audio.src = url
         await audio.play()
-        await power_calc()  
+        asyncio.create_task(power_calc())
 
         
     async def electroman_play(e):
@@ -141,7 +139,7 @@ def main(page: ft.Page):
             ser.write(f"{bpm}\n".encode())  
         audio.src = url
         await audio.play()
-        await power_calc()
+        asyncio.create_task(power_calc())
     async def geometrical_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
         await create_subprocess_exec('python', 'auto.py')
@@ -154,7 +152,7 @@ def main(page: ft.Page):
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
-        await power_calc()
+        asyncio.create_task(power_calc())
     async def hexagon_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
         await create_subprocess_exec('python', 'auto.py')
@@ -167,7 +165,7 @@ def main(page: ft.Page):
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
-        await power_calc()  
+        asyncio.create_task(power_calc())
     async def electrodynamix_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
         await create_subprocess_exec('python', 'auto.py')
@@ -180,7 +178,7 @@ def main(page: ft.Page):
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
-        await power_calc()
+        asyncio.create_task(power_calc())
     async def tidalwave_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
         await create_subprocess_exec('python', 'auto.py')
@@ -193,7 +191,7 @@ def main(page: ft.Page):
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
-        await power_calc()
+        asyncio.create_task(power_calc())
     async def amethyst_play(e):
         await create_subprocess_exec('python', 'temp/pose.py')
         await create_subprocess_exec('python', 'auto.py')
@@ -201,17 +199,17 @@ def main(page: ft.Page):
         await off_send(None)  
         time.sleep(0.2)
         url = r"GeometryDash\amethyst.mp3"
-        bpm = 41.5        #166
+        bpm = 41.5
         if ser and ser.is_open:
             ser.write(f"{bpm}\n".encode())
         audio.src = url
         await audio.play()
-        await power_calc()
 
+        asyncio.create_task(power_calc())
     def score():
         last_cmd = ""
         while True:
-            # 1. Read from Arduino (Reactions & Powers)
+            
             if ser and ser.in_waiting > 0:
                 try:
                     line = ser.readline().decode('utf-8').strip()
@@ -220,18 +218,16 @@ def main(page: ft.Page):
                 except Exception as e:
                     print(f"Serial Read Error: {e}")
             
-            # 2. Check for new commands from auto.py independently
             try:
                 if os.path.exists("cmd.txt"):
                     with open("cmd.txt", 'r') as f:
                         cmd = f.read().strip()
                     
-                    # Only send if the command is new and not empty
                     if cmd and cmd != last_cmd and ser:
                         ser.write(f"{cmd}\n".encode())
                         last_cmd = cmd 
             except Exception as e:
-                pass # Ignore temporary file read conflicts
+                pass 
             
             time.sleep(0.01)
     async def jumper_play(e):
@@ -263,6 +259,10 @@ def main(page: ft.Page):
         with open("graph/2D/coin2.txt", 'w') as f:
             f.write("")
         with open("graph/2D/hit2.txt", 'w') as f:
+            f.write("")
+        with open("graph/Flap/1.txt", 'w') as f:
+            f.write("")
+        with open("graph/Flap/2.txt", 'w') as f:
             f.write("")
     class ScoreTracker:
         def __init__(self):
@@ -319,7 +319,6 @@ def main(page: ft.Page):
         jump_slider.visible = jump_menu
         jump_play_btn.visible = jump_menu
 
-        # Add flap menu visibility toggles
         flap_title.visible = flap_menu
         flap_slider.visible = flap_menu
         flap_play_btn.visible = flap_menu
@@ -327,10 +326,9 @@ def main(page: ft.Page):
         rhythmic_btn.visible = game_menu
         jumper_btn.visible = game_menu
         jump_btn.visible = game_menu 
-        flap_btn.visible = game_menu # Make sure Flap shows up in the games menu
+        flap_btn.visible = game_menu 
         
         header_text.visible = main
-        show_btn.visible = main
         game_btn.visible = main
         off_btn.visible = main
         
@@ -348,7 +346,6 @@ def main(page: ft.Page):
         delete_btn.visible = main
         page.update()
     
-    show_btn = ft.ElevatedButton(content=ft.Text("📈 Show Graph", size=45), on_click=show_image, height=100, width=400)
     back_btn = ft.ElevatedButton(content=ft.Text("🏠", size=45), on_click=go_back, height=100, width=400, visible=False)
     off_btn = ft.ElevatedButton(content=ft.Text("🛑 Reset", size=45), on_click=off_send, bgcolor=ft.Colors.RED, height=100, width=400)
     game_btn = ft.ElevatedButton(content=ft.Text("🎮 Games?", size=45), on_click=game_page, height=100, width=400)
@@ -387,7 +384,6 @@ def main(page: ft.Page):
             f.write(str(selected_difficulty))
     
         await audio.pause()
-        # Executes flappy.py with the difficulty argument
         await create_subprocess_exec('python3', 'flappy.py', str(selected_difficulty))
 
     flap_play_btn = ft.ElevatedButton(
@@ -470,8 +466,7 @@ def main(page: ft.Page):
         visible=False
     )
     page.add(
-        header_text, 
-        show_btn, 
+        header_text,
         game_btn, 
         off_btn, 
         delete_btn,
