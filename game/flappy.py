@@ -15,8 +15,8 @@ try:
 except:
     content_int = 1.0
 
-AUDIO_FILE = 'GeometryDash/geometry.mp3'  
-MODEL_PATH = 'temp/yolo11n-pose.mlpackage' #engine  
+AUDIO_FILE = 'GeometryDash/jumper.mp3'  
+MODEL_PATH = 'temp/yolo11n-pose.engine'  
 LANE_COUNT = 12
 
 SENSITIVITY = 2.00 - content_int 
