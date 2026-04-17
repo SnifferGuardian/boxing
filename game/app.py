@@ -37,6 +37,7 @@ except Exception as e:
 
 def main(page: ft.Page):
     page.title = "Rhythmic Box Controller"
+    selected_files = ft.Text()
     
     header_text = ft.Text("What do you want to do?", theme_style=ft.TextThemeStyle.DISPLAY_LARGE)
     
@@ -344,8 +345,19 @@ def main(page: ft.Page):
         tidalwave_btn.visible = rhythm_game
         amethyst_btn.visible = rhythm_game
         delete_btn.visible = main
+        audio_selec.visible = main
         page.update()
     
+    async def handle_pick_files(e: ft.Event[ft.Button]):
+        files = await ft.FilePicker().pick_files(allow_multiple=True)
+        selected_files.value = (
+            ", ".join(map(lambda f: f.name, files)) if files else "Cancelled!"
+        
+        )
+        
+        print("GeometryDash/" + selected_files.value)
+        with open ("song_file.txt", "w") as f:
+            f.write("GeometryDash/" + selected_files.value)
     back_btn = ft.ElevatedButton(content=ft.Text("🏠", size=45), on_click=go_back, height=100, width=400, visible=False)
     off_btn = ft.ElevatedButton(content=ft.Text("🛑 Reset", size=45), on_click=off_send, bgcolor=ft.Colors.RED, height=100, width=400)
     game_btn = ft.ElevatedButton(content=ft.Text("🎮 Games?", size=45), on_click=game_page, height=100, width=400)
@@ -359,6 +371,7 @@ def main(page: ft.Page):
     amethyst_btn = ft.ElevatedButton(content=ft.Text("Amethyst", size=45), on_click=amethyst_play, height=90, width=400)
     score_text = ft.Text(f"Score: {tracker.current_total}", size=135)
     delete_btn = ft.ElevatedButton(content=ft.Text("Delete Data", size=45), on_click=delete_data, bgcolor=ft.Colors.BLACK, height=100, width=400)
+    audio_selec = ft.ElevatedButton(content=ft.Text("Pick files", size=45), icon=ft.Icons.UPLOAD_FILE, on_click=handle_pick_files, height=90, width=400)
     def open_jumper_menu(e):
         toggle_visibility(jumper_menu=True)
     def open_jump_menu(e):
@@ -459,6 +472,7 @@ def main(page: ft.Page):
         await audio.pause()
         
         await create_subprocess_exec('python', 'hori.py', str(selected_difficulty), "Back On Track")
+    
 
     jumper_play_btn = ft.ElevatedButton(
         "play", 
@@ -492,6 +506,7 @@ def main(page: ft.Page):
         flap_title,
         flap_slider,
         flap_play_btn,
+        audio_selec,
     )
 
 

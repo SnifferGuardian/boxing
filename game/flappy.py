@@ -12,10 +12,12 @@ import matplotlib.pyplot as plt
 try:
     with open('difficulty.txt', 'r') as f:
         content_int = float(f.read())
+    with open('song_file.txt', 'r') as f:
+        AUDIO_FILE = f.read().strip()
 except:
     content_int = 1.0
 
-AUDIO_FILE = 'GeometryDash/jumper.mp3'  
+#AUDIO_FILE = 'GeometryDash/jumper.mp3'  
 MODEL_PATH = 'temp/yolo11n-pose.engine'  
 LANE_COUNT = 12
 
