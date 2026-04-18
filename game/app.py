@@ -265,6 +265,14 @@ def main(page: ft.Page):
             f.write("")
         with open("graph/Flap/2.txt", 'w') as f:
             f.write("")
+        with open("graph/DualWrist/1.txt", 'w') as f:
+            f.write("")
+        with open("graph/DualWrist/2.txt", 'w') as f:
+            f.write("")
+        with open("graph/ShipWrist/1.txt", 'w') as f:
+            f.write("")
+        with open("graph/ShipWrist/2.txt", 'w') as f:
+            f.write("") 
     class ScoreTracker:
         def __init__(self):
             self.current_total = 0.0
@@ -345,7 +353,7 @@ def main(page: ft.Page):
         tidalwave_btn.visible = rhythm_game
         amethyst_btn.visible = rhythm_game
         delete_btn.visible = main
-        audio_selec.visible = main
+        audio_selec.visible = game_menu
         page.update()
     
     async def handle_pick_files(e: ft.Event[ft.Button]):
@@ -358,20 +366,20 @@ def main(page: ft.Page):
         print("GeometryDash/" + selected_files.value)
         with open ("song_file.txt", "w") as f:
             f.write("GeometryDash/" + selected_files.value)
-    back_btn = ft.ElevatedButton(content=ft.Text("🏠", size=45), on_click=go_back, height=100, width=400, visible=False)
-    off_btn = ft.ElevatedButton(content=ft.Text("🛑 Reset", size=45), on_click=off_send, bgcolor=ft.Colors.RED, height=100, width=400)
-    game_btn = ft.ElevatedButton(content=ft.Text("🎮 Games?", size=45), on_click=game_page, height=100, width=400)
-    rhythmic_btn = ft.ElevatedButton(content=ft.Text("🥊 Boxing!", size=45), on_click=rhythmic_game, visible=False, width=400)
-    cycles_btn = ft.ElevatedButton(content=ft.Text("Cycles", size=45), on_click=cycles_play, height=90, width=400)
-    electroman_btn = ft.ElevatedButton(content=ft.Text("Electroman", size=45), on_click=electroman_play, height=90, width=400)
-    geometrical_btn = ft.ElevatedButton(content=ft.Text("Geometrical Dominator", size=35), on_click=geometrical_play, height=90, width=400)
-    hexagon_btn = ft.ElevatedButton(content=ft.Text("Hexagon Force", size=45), on_click=hexagon_play, height=90, width=400)
-    electrodynamix_btn = ft.ElevatedButton(content=ft.Text("Electrodynamix", size=45), on_click=electrodynamix_play, height=90, width=400)
-    tidalwave_btn = ft.ElevatedButton(content=ft.Text("Tidalwave", size=45), on_click=tidalwave_play, height=90, width=400)
-    amethyst_btn = ft.ElevatedButton(content=ft.Text("Amethyst", size=45), on_click=amethyst_play, height=90, width=400)
+    back_btn = ft.Button(content=ft.Text("🏠", size=45), on_click=go_back, height=100, width=100, visible=False)
+    off_btn = ft.Button(content=ft.Text("Reset", size=45), on_click=off_send, bgcolor=ft.Colors.RED, height=100, width=400)
+    game_btn = ft.Button(content=ft.Text("Games?", size=45), on_click=game_page, height=100, width=400)
+    rhythmic_btn = ft.Button(content=ft.Text("Boxing!", size=45), on_click=rhythmic_game, visible=False, width=400)
+    cycles_btn = ft.Button(content=ft.Text("Cycles", size=45), on_click=cycles_play, height=90, width=400)
+    electroman_btn = ft.Button(content=ft.Text("Electroman", size=45), on_click=electroman_play, height=90, width=400)
+    geometrical_btn = ft.Button(content=ft.Text("Geometrical Dominator", size=35), on_click=geometrical_play, height=90, width=400)
+    hexagon_btn = ft.Button(content=ft.Text("Hexagon Force", size=45), on_click=hexagon_play, height=90, width=400)
+    electrodynamix_btn = ft.Button(content=ft.Text("Electrodynamix", size=45), on_click=electrodynamix_play, height=90, width=400)
+    tidalwave_btn = ft.Button(content=ft.Text("Tidalwave", size=45), on_click=tidalwave_play, height=90, width=400)
+    amethyst_btn = ft.Button(content=ft.Text("Amethyst", size=45), on_click=amethyst_play, height=90, width=400)
     score_text = ft.Text(f"Score: {tracker.current_total}", size=135)
-    delete_btn = ft.ElevatedButton(content=ft.Text("Delete Data", size=45), on_click=delete_data, bgcolor=ft.Colors.BLACK, height=100, width=400)
-    audio_selec = ft.ElevatedButton(content=ft.Text("Pick files", size=45), icon=ft.Icons.UPLOAD_FILE, on_click=handle_pick_files, height=90, width=400)
+    delete_btn = ft.Button(content=ft.Text("Delete Data", size=45), on_click=delete_data, bgcolor=ft.Colors.BLACK, height=100, width=400)
+    audio_selec = ft.Button(content=ft.Text("Pick files", size=45), on_click=handle_pick_files, bgcolor=ft.Colors.PURPLE_900, color=ft.Colors.WHITE, height=90, width=400)
     def open_jumper_menu(e):
         toggle_visibility(jumper_menu=True)
     def open_jump_menu(e):
@@ -399,19 +407,19 @@ def main(page: ft.Page):
         await audio.pause()
         await create_subprocess_exec('python3', 'flappy.py', str(selected_difficulty))
 
-    flap_play_btn = ft.ElevatedButton(
+    flap_play_btn = ft.Button(
         "play", 
         on_click=save_and_play_flap, 
         visible=False   
     )
-    jump_btn = ft.ElevatedButton(
+    jump_btn = ft.Button(
         content=ft.Text("UFO", size=45), 
         on_click=open_jump_menu, 
         height=90, 
         width=400,
         visible=False
     )
-    flap_btn = ft.ElevatedButton(
+    flap_btn = ft.Button(
         content=ft.Text("Flap", size=45),
         on_click=open_flap_menu,
         height=90,
@@ -438,12 +446,12 @@ def main(page: ft.Page):
         await audio.pause()
         await create_subprocess_exec('python', 'jump.py', str(selected_difficulty))
 
-    jump_play_btn = ft.ElevatedButton(
+    jump_play_btn = ft.Button(
         "play", 
         on_click=save_and_play_jump, 
         visible=False   
     )
-    jumper_btn = ft.ElevatedButton(
+    jumper_btn = ft.Button(
         content=ft.Text("Jumper", size=45), 
         on_click=open_jumper_menu, 
         height=90, 
@@ -474,7 +482,7 @@ def main(page: ft.Page):
         await create_subprocess_exec('python', 'hori.py', str(selected_difficulty), "Back On Track")
     
 
-    jumper_play_btn = ft.ElevatedButton(
+    jumper_play_btn = ft.Button(
         "play", 
         on_click=save_and_play_jumper, 
         visible=False
@@ -602,5 +610,6 @@ def main(page: ft.Page):
 
         if os.path.exists(stop_signal_path):
             os.remove(stop_signal_path)
+if __name__ == "__main__":
+    ft.run(main)
 
-ft.app(target=main)

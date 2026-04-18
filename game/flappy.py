@@ -216,9 +216,9 @@ try:
                         effect = random.choice(["flash", "speed", "grav"])
                         if effect == "flash": flash_end_time = now + 0.5
                         elif effect == "speed": speed_end_time = now + 3.0
-                        elif effect == "grav": gravity_end_time = now + 4.0
+                        elif effect == "grav": gravity_end_time = now + 0.0#default 4.0
                     else: 
-                        burn_end_time = now + 0.5 
+                        burn_end_time = now + 0.0
 
                     feedback_messages.append(["", (0, 0, 255), elapsed])
                     obs[2] = 1 

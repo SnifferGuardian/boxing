@@ -12,12 +12,12 @@ import matplotlib.pyplot as plt
 try:
     with open('difficulty.txt', 'r') as f:
         content_int = float(f.read())
+        
     with open('song_file.txt', 'r') as f:
         AUDIO_FILE = f.read().strip()
 except:
     content_int = 1.0
 
-#AUDIO_FILE = 'GeometryDash/Amethyst.mp3' 
 MODEL_PATH = 'temp/yolo11n-pose.engine' 
 LANE_COUNT = 12
 
@@ -26,15 +26,14 @@ HOP = 128
 OFFSET = 0.06 
 
 BASE_SHOOT_TIME = 0.8   
-width, height = 2000, 1000 
-UFO_SIZE = 50   
-OBSTACLE_SIZE = 40
+width, height = 1920, 1080 
+SHIP_SIZE = 60
+OBSTACLE_SIZE = 30
 
-GRAVITY = 3500.0        
-JUMP_STRENGTH = -1100.0
-ufo_y = float(height // 2)
-ufo_vy = 0.0
-is_punched = False      
+HIT_X_LEFT = 150
+HIT_X_RIGHT = 300
+left_ship_y = height / 2
+right_ship_y = height / 2
 
 SCORE = 0
 POINTS_DODGE = 50
@@ -58,102 +57,105 @@ for i in range(len(peaks)):
 
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
+screen = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Dual Wrist Ships")
 
 SPAWN_X = width + 50               
-HIT_X = 200        
 
-cv2.namedWindow("UFO Dodge", cv2.WINDOW_NORMAL)
 model = YOLO(MODEL_PATH)
 cap = cv2.VideoCapture(0)
+
+cam_w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+cam_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+if cam_h == 0: cam_h = 480 
+
 pygame.mixer.music.load(AUDIO_FILE)
 
 active_obstacles = []
 feedback_messages = [] 
 beat_index = 0
 
-flash_end_time, speed_end_time, gravity_end_time = 0, 0, 0
-burn_end_time = 0  
+flash_end_time, speed_end_time = 0, 0
 decay_end_time = 0 
 
-last_ufo_y = ufo_y
-last_ufo_move_time = time.time()
+last_left_y, last_right_y = left_ship_y, right_ship_y
+last_active_time = time.time()
 last_drain_time = time.time()
 
 stars = [[random.randint(0, width), random.randint(0, height), random.uniform(100, 400), random.randint(1, 3)] for _ in range(150)]
 
-def draw_ufo(frame, x, y, size, color, is_inverted=False):
-    """Draws a flipped UFO based on gravity state."""
-    if is_inverted:
-        cv2.ellipse(frame, (x, int(y + size*0.1)), (int(size*0.6), int(size*0.5)), 0, 0, 180, (255, 230, 200), -1)
-    else:
-        cv2.ellipse(frame, (x, int(y - size*0.1)), (int(size*0.6), int(size*0.5)), 0, 180, 360, (255, 230, 200), -1)
-    cv2.ellipse(frame, (x, int(y)), (size, int(size*0.35)), 0, 0, 360, color, -1)
-    cv2.ellipse(frame, (x, int(y)), (size, int(size*0.35)), 0, 0, 360, (200, 200, 200), 2)
-    for dx in [-size//2, 0, size//2]:
-        cv2.circle(frame, (x + dx, int(y)), 4, (0, 255, 255), -1)
-
-def draw_fire_borders(frame, w, h, offset_time):
-    """Draws animated fire at top and bottom drain areas."""
-    for x in range(0, w, 40):
-        flame_h_bottom = 35 + int(30 * math.sin(x*0.05 + offset_time*10))
-        pts_bottom = np.array([[x, h], [x+20, h-flame_h_bottom], [x+40, h]])
-        cv2.fillPoly(frame, [pts_bottom], (0, 120, 255))
-        flame_h_top = 35 + int(30 * math.cos(x*0.05 + offset_time*12))
-        pts_top = np.array([[x, 0], [x+20, flame_h_top], [x+40, 0]])
-        cv2.fillPoly(frame, [pts_top], (0, 120, 255))
+def draw_ship(frame, x, y, size, color):
+    """Draws a GD-style Ship with constant thruster fire."""
+    pts = np.array([
+        [int(x - size), int(y - size * 0.5)],
+        [int(x + size), int(y)],
+        [int(x - size), int(y + size * 0.5)],
+        [int(x - size * 0.5), int(y)]
+    ], np.int32)
+    cv2.fillPoly(frame, [pts], color)
+    cv2.polylines(frame, [pts], True, (255, 255, 255), 2)
+    
+    cockpit = np.array([
+        [int(x - size * 0.2), int(y - size * 0.2)],
+        [int(x + size * 0.5), int(y)],
+        [int(x - size * 0.2), int(y)]
+    ], np.int32)
+    cv2.fillPoly(frame, [cockpit], (200, 255, 255))
+    
+    fire_len = random.randint(20, 40)
+    fire = np.array([
+        [int(x - size), int(y - size * 0.3)],
+        [int(x - size - fire_len), int(y)],
+        [int(x - size), int(y + size * 0.3)]
+    ], np.int32)
+    cv2.fillPoly(frame, [fire], (0, 120, 255))
 
 pygame.mixer.music.play()
 game_start_time = time.time()
 last_frame_time = game_start_time
+running = True
 
 try:
-    while pygame.mixer.music.get_busy():
+    while running and pygame.mixer.music.get_busy():
         now = time.time()
         elapsed = now - game_start_time
         dt = now - last_frame_time 
         last_frame_time = now
         
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT: running = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_q: running = False
+
         is_flashbanged = now < flash_end_time
         current_shoot_time = BASE_SHOOT_TIME / 2.0 if now < speed_end_time else BASE_SHOOT_TIME
-        is_gravity_reversed = now < gravity_end_time
 
         ret, frame_cam = cap.read()
         if not ret: break
         
+        frame_cam = cv2.flip(frame_cam, 1)
         results = model(frame_cam, verbose=False, stream=True)
+
+        target_left_y, target_right_y = left_ship_y, right_ship_y
+
         for r in results:
             if r.keypoints is not None:
                 kps = r.keypoints.xy.cpu().numpy()
                 if len(kps) > 0:
                     person = kps[0] 
                     if len(person) > 10:
-                        ls, rs, lw, rw = person[5], person[6], person[9], person[10]
-                        if ls[0] > 0 and rs[0] > 0:
-                            sw = math.sqrt((ls[0]-rs[0])**2 + (ls[1]-rs[1])**2)
-                            reach = 0
-                            if rw[0] > 0: reach = max(reach, math.sqrt((rw[0]-rs[0])**2 + (rw[1]-rs[1])**2)/sw)
-                            if lw[0] > 0: reach = max(reach, math.sqrt((lw[0]-ls[0])**2 + (lw[1]-ls[1])**2)/sw)
-                            
-                            if reach > 1.6:
-                                if not is_punched:
-                                    ufo_vy = -JUMP_STRENGTH if is_gravity_reversed else JUMP_STRENGTH
-                                    is_punched = True
-                            elif reach < 1.3:
-                                is_punched = False
+                        rw, lw = person[9], person[10]
+                        
+                        if lw[0] > 0: 
+                            target_left_y = (lw[1] / cam_h) * height
+                        if rw[0] > 0:
+                            target_right_y = (rw[1] / cam_h) * height
 
-        ufo_vy += (-GRAVITY if is_gravity_reversed else GRAVITY) * dt
-        ufo_y += ufo_vy * dt
+        left_ship_y += (target_left_y - left_ship_y) * 0.3
+        right_ship_y += (target_right_y - right_ship_y) * 0.3
 
-        is_ufo_burning = False
-        if ufo_y > height - UFO_SIZE:
-            ufo_y, ufo_vy = height - UFO_SIZE, 0
-            is_ufo_burning = True
-        elif ufo_y < UFO_SIZE:
-            ufo_y, ufo_vy = UFO_SIZE, 0
-            is_ufo_burning = True
-
-        if abs(ufo_y - last_ufo_y) > 1.0: last_ufo_move_time = now
-        last_ufo_y = ufo_y
+        if abs(left_ship_y - last_left_y) > 3.0 or abs(right_ship_y - last_right_y) > 3.0: 
+            last_active_time = now
+        last_left_y, last_right_y = left_ship_y, right_ship_y
 
         frame = np.zeros((height, width, 3), dtype=np.uint8)
         
@@ -162,22 +164,29 @@ try:
             if star[0] < 0: star[0], star[1] = width, random.randint(0, height)
             cv2.circle(frame, (int(star[0]), int(star[1])), star[3], (255, 255, 255), -1)
 
-        draw_fire_borders(frame, width, height, elapsed)
-
-        cv2.putText(frame, f"SCORE: {SCORE}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
-
-        active_mods = []
-        if is_gravity_reversed: active_mods.append(f"REV GRAVITY ({int(gravity_end_time-now)}s)")
-        if now < speed_end_time: active_mods.append(f"2X SPEED ({int(speed_end_time-now)}s)")
-        for i, mod in enumerate(active_mods):
-            cv2.putText(frame, mod, (30, 120 + i*40), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
-
-        if is_ufo_burning or (now - last_ufo_move_time > 0.01):
+        time_since_active = now - last_active_time
+        if time_since_active > 1.5:
+            for sy in [left_ship_y, right_ship_y]:
+                for sx in [HIT_X_LEFT, HIT_X_RIGHT]:
+                    for _ in range(4):
+                        fx = sx + random.randint(-SHIP_SIZE, int(SHIP_SIZE*1.5))
+                        fy = int(sy) + random.randint(-SHIP_SIZE, SHIP_SIZE)
+                        cv2.circle(frame, (fx, fy), random.randint(15, 30), (0, 100, 255), -1)
+                        cv2.circle(frame, (fx, fy), random.randint(5, 15), (0, 200, 255), -1)
+            
+            if math.sin(now * 15) > 0:
+                cv2.putText(frame, "MOVE ARMS!", (width//2 - 150, 100), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 255), 5)
+            
             if now - last_drain_time > 0.1:
                 SCORE += INACTIVITY_DRAIN
                 stats["points_log"].append(INACTIVITY_DRAIN)
                 last_drain_time = now
-                feedback_messages.append(["", (0, 0, 255), elapsed])
+
+        cv2.putText(frame, f"SCORE: {SCORE}", (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (255, 255, 255), 3)
+
+        if now < speed_end_time:
+            cv2.putText(frame, f"2X SPEED ({int(speed_end_time-now)}s)", (30, 120), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 255), 2)
+
         if beat_index < len(obstacles):
             obs = obstacles[beat_index]
             if elapsed >= (obs['time'] - current_shoot_time - OFFSET):
@@ -191,24 +200,27 @@ try:
             bx, by = int(SPAWN_X - (progress * (SPAWN_X + 100))), int((lane + 0.5) * (height / LANE_COUNT))
 
             if state == 0: 
-                if abs(by - ufo_y) < (UFO_SIZE + OBSTACLE_SIZE) and abs(bx - HIT_X) < (UFO_SIZE + OBSTACLE_SIZE):
+                dist_left = math.hypot(bx - HIT_X_LEFT, by - left_ship_y)
+                dist_right = math.hypot(bx - HIT_X_RIGHT, by - right_ship_y)
+                
+                hit_radius = SHIP_SIZE + OBSTACLE_SIZE
+                
+                if dist_left < hit_radius or dist_right < hit_radius:
                     if is_chaos: 
                         SCORE += POINTS_HIT_PENALTY
                         stats["hit"] += 1
                         stats["points_log"].append(POINTS_HIT_PENALTY)
                         decay_end_time = now + 1.0
-                        effect = random.choice(["flash", "speed", "grav"])
-                        if effect == "flash": flash_end_time = now + 0.5
-                        elif effect == "speed": speed_end_time = now + 3.0
-                        elif effect == "grav": gravity_end_time = now + 4.0
-                        feedback_messages.append(["", (255, 0, 255), elapsed])
-                    else: # green
+                        if random.random() < 0.5: flash_end_time = now + 0.5
+                        else: speed_end_time = now + 3.0
+                        feedback_messages.append(["DECAY!", (255, 0, 255), elapsed, bx, by])
+                    else: 
                         SCORE += POINTS_DODGE
                         stats["dodged"] += 1
                         stats["points_log"].append(POINTS_DODGE)
-                        feedback_messages.append(["", (0, 255, 0), elapsed])
+                        feedback_messages.append(["GOOD!", (0, 255, 0), elapsed, bx, by])
                     obs[2] = 1 
-                elif bx < HIT_X - 100:
+                elif bx < min(HIT_X_LEFT, HIT_X_RIGHT) - 100:
                     if not is_chaos: 
                         SCORE += POINTS_HIT_PENALTY
                     obs[2] = 2 
@@ -223,46 +235,43 @@ try:
                 new_obstacles.append(obs)
         active_obstacles = new_obstacles
 
-        draw_ufo(frame, HIT_X, int(ufo_y), UFO_SIZE, (200, 100, 255), is_inverted=is_gravity_reversed)
+        draw_ship(frame, HIT_X_LEFT, int(left_ship_y), SHIP_SIZE, (255, 100, 50))   
+        draw_ship(frame, HIT_X_RIGHT, int(right_ship_y), SHIP_SIZE, (50, 100, 255)) 
         
         new_fb = []
-        for msg, color, spawn in feedback_messages:
+        for msg, color, spawn, mx, my in feedback_messages:
             if elapsed - spawn < 0.8:
                 alpha = 1.0 - ((elapsed - spawn)/0.8)
-                cv2.putText(frame, msg, (HIT_X + 100, int(ufo_y) + random.randint(-20,20)), 
+                cv2.putText(frame, msg, (mx, my - 50), 
                             cv2.FONT_HERSHEY_SIMPLEX, 1.2, (int(color[0]*alpha), int(color[1]*alpha), int(color[2]*alpha)), 3)
-                new_fb.append([msg, color, spawn])
+                new_fb.append([msg, color, spawn, mx, my])
         feedback_messages = new_fb
 
-        if is_ufo_burning:
-            for _ in range(5):
-                fx, fy = HIT_X + random.randint(-UFO_SIZE, UFO_SIZE), int(ufo_y) + random.randint(-UFO_SIZE, UFO_SIZE)
-                cv2.circle(frame, (fx, fy), random.randint(10, 25), (0, 120, 255), -1)
-            overlay = np.full_like(frame, (0, 50, 200), dtype=np.uint8)
-            frame = cv2.addWeighted(frame, 0.7, overlay, 0.3, 0)
-            
         if now < decay_end_time:
             frame = cv2.bitwise_not(frame)
             overlay = np.full_like(frame, (200, 0, 200), dtype=np.uint8)
             frame = cv2.addWeighted(frame, 0.8, overlay, 0.2, 0)
 
         if is_flashbanged: frame[:, :] = 255 
-        cv2.imshow("UFO Dodge", frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'): break
+        
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        surf = pygame.image.frombuffer(frame_rgb.flatten(), (width, height), 'RGB')
+        screen.blit(surf, (0, 0))
+        pygame.display.flip()
 
 except KeyboardInterrupt: pass
 cap.release()
-pygame.mixer.music.stop()
-cv2.destroyAllWindows()
+pygame.quit()
+
 def show_analytics():
-    os.makedirs("graph/UFO", exist_ok=True)
+    os.makedirs("graph/DualWrist", exist_ok=True)
     
     total_obs = stats["hit"] + stats["dodged"]
     dodge_pc = (stats["dodged"] / total_obs * 100) if total_obs > 0 else 0
     final_score = SCORE
 
-    with open("graph/UFO/1.txt", "a") as f: f.write(f"{final_score}\n")
-    with open("graph/UFO/2.txt", "a") as f: f.write(f"{dodge_pc}\n")
+    with open("graph/DualWrist/1.txt", "a") as f: f.write(f"{final_score}\n")
+    with open("graph/DualWrist/2.txt", "a") as f: f.write(f"{dodge_pc}\n")
 
     def load_data(file):
         data = []
@@ -272,19 +281,19 @@ def show_analytics():
                     if line.strip(): data.append(float(line.strip()))
         return data
 
-    history_1 = load_data("graph/UFO/1.txt")
-    history_2 = load_data("graph/UFO/2.txt")
+    history_1 = load_data("graph/DualWrist/1.txt")
+    history_2 = load_data("graph/DualWrist/2.txt")
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-    fig.canvas.manager.set_window_title('Historical Analytics')
+    fig.canvas.manager.set_window_title('Dual Wrist Analytics')
 
     axes[0].plot(history_1, marker='o', color='#8e44ad', linewidth=2)
-    axes[0].set_title('History: Final Score')
+    axes[0].set_title('score')
     axes[0].set_xlabel('Game Session')
     axes[0].grid(True, alpha=0.3)
 
     axes[1].plot(history_2, marker='s', color='#16a085', linewidth=2)
-    axes[1].set_title('History: Dodge Percentage (%)')
+    axes[1].set_title('dodge percentage')
     axes[1].set_xlabel('Game Session')
     axes[1].set_ylim(0, 105)
     axes[1].grid(True, alpha=0.3)
