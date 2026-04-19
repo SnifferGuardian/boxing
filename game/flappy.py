@@ -295,8 +295,8 @@ def show_analytics():
 
     h1, h2 = load_data("graph/Flap/1.txt"), load_data("graph/Flap/2.txt")
     fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-    axes[0].plot(h1, marker='o', color='#8e44ad'); axes[0].set_title('Score History')
-    axes[1].plot(h2, marker='s', color='#16a085'); axes[1].set_title('Dodge % History')
+    axes[0].plot(h1, marker='o', color='#8e44ad'); axes[0].set_title('score')
+    axes[1].plot(h2, marker='s', color='#16a085'); axes[1].set_title('Dodge %')
     plt.tight_layout()
     plt.show()
 

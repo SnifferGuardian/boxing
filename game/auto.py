@@ -6,7 +6,8 @@ import cv2
 import math
 import random
 
-AUDIO_FILE = 'GeometryDash/amethyst.mp3'
+with open('song_file.txt', 'r') as f:
+    AUDIO_FILE = f.read().strip()
 LANE_COUNT = 12
 SENSITIVITY = 0.1
 HOP = 96
@@ -14,11 +15,6 @@ OFFSET = 0.06
 SHOOT_TIME = 1.0   
 CIRCLE_SIZE = 70   
 
-try:
-    ser = serial.Serial('COM13', 115200, timeout=1) 
-except Exception as e:
-    print(f"Serial Error: {e}")
-    ser = None
 
 
 y, sr = librosa.load(AUDIO_FILE)

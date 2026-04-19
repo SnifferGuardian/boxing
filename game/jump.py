@@ -28,7 +28,7 @@ OFFSET = 0.06
 BASE_SHOOT_TIME = 0.8   
 width, height = 1920, 1080 
 SHIP_SIZE = 60
-OBSTACLE_SIZE = 30
+OBSTACLE_SIZE = 45
 
 HIT_X_LEFT = 150
 HIT_X_RIGHT = 300
@@ -37,8 +37,9 @@ right_ship_y = height / 2
 
 SCORE = 0
 POINTS_DODGE = 50
-POINTS_HIT_PENALTY = -50
-INACTIVITY_DRAIN = -75  
+POINTS_HIT_PENALTY = -5
+INACTIVITY_DRAIN = -75
+THRESH = 50.0
 stats = {"dodged": 0, "hit": 0, "points_log": []}
 
 print("Analyzing audio... please wait.")
@@ -85,7 +86,6 @@ last_drain_time = time.time()
 stars = [[random.randint(0, width), random.randint(0, height), random.uniform(100, 400), random.randint(1, 3)] for _ in range(150)]
 
 def draw_ship(frame, x, y, size, color):
-    """Draws a GD-style Ship with constant thruster fire."""
     pts = np.array([
         [int(x - size), int(y - size * 0.5)],
         [int(x + size), int(y)],
@@ -153,7 +153,7 @@ try:
         left_ship_y += (target_left_y - left_ship_y) * 0.3
         right_ship_y += (target_right_y - right_ship_y) * 0.3
 
-        if abs(left_ship_y - last_left_y) > 3.0 or abs(right_ship_y - last_right_y) > 3.0: 
+        if abs(left_ship_y - last_left_y) > THRESH or abs(right_ship_y - last_right_y) > THRESH: 
             last_active_time = now
         last_left_y, last_right_y = left_ship_y, right_ship_y
 
@@ -175,7 +175,7 @@ try:
                         cv2.circle(frame, (fx, fy), random.randint(5, 15), (0, 200, 255), -1)
             
             if math.sin(now * 15) > 0:
-                cv2.putText(frame, "MOVE ARMS!", (width//2 - 150, 100), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 255), 5)
+                cv2.putText(frame, "move poophead", (width//2 - 150, 100), cv2.FONT_HERSHEY_SIMPLEX, 2.0, (0, 0, 255), 5)
             
             if now - last_drain_time > 0.1:
                 SCORE += INACTIVITY_DRAIN
@@ -213,12 +213,12 @@ try:
                         decay_end_time = now + 1.0
                         if random.random() < 0.5: flash_end_time = now + 0.5
                         else: speed_end_time = now + 3.0
-                        feedback_messages.append(["DECAY!", (255, 0, 255), elapsed, bx, by])
+                        feedback_messages.append(["", (255, 0, 255), elapsed, bx, by])
                     else: 
                         SCORE += POINTS_DODGE
                         stats["dodged"] += 1
                         stats["points_log"].append(POINTS_DODGE)
-                        feedback_messages.append(["GOOD!", (0, 255, 0), elapsed, bx, by])
+                        feedback_messages.append(["", (0, 255, 0), elapsed, bx, by])
                     obs[2] = 1 
                 elif bx < min(HIT_X_LEFT, HIT_X_RIGHT) - 100:
                     if not is_chaos: 

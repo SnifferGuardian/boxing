@@ -55,7 +55,7 @@ def main(page: ft.Page):
         if e.state == "completed":
             print("Song finished! Stopping AI and generating results...")
             stop_script = os.path.join(os.path.dirname(__file__), "stop_ai.py")
-            await subprocess.create_subprocess_exec('python', stop_script)
+            await asyncio.create_subprocess_exec('python', stop_script)
 
     audio = fta.Audio(
         src=url,
@@ -80,10 +80,29 @@ def main(page: ft.Page):
             ser.flush()
             await audio_off(e)
 
-    async def send_inactive_ports(e):
-        if ser is None:
-            print("Error: No Arduino detected. Check your USB cable and COM port.")
-            return 
+            # Move all of this INSIDE the if ser: block
+            ser.write("reset_ports\n".encode())
+            ser.flush()
+            print("Arduino ports reset. Waiting for sync...")
+            
+            await asyncio.sleep(0.2) 
+        
+            char_map = ["a", "b", "c", "d", "e", "f"]
+        
+            for index, p in enumerate(ports):
+                if not p.value: 
+                    msg = f"{char_map[index]}\n"
+                    ser.write(msg.encode()) 
+                    ser.flush()
+                    print(f"Sent Disable command: {char_map[index]}")
+                    await asyncio.sleep(0.1) 
+
+            print("Sync Complete.")
+        else:
+            # Fallback if testing without the Arduino plugged in
+            print("Serial not connected. Skipping Arduino sync.")
+            await audio_off(e)
+
 
         ser.write("reset_ports\n".encode())
         ser.flush()
@@ -111,102 +130,17 @@ def main(page: ft.Page):
 
     def go_back(e):
         toggle_visibility(main=True)
-    
     async def cycles_play(e):
         tracker.reset()
         await off_send(None)  
-        await create_subprocess_exec('python', 'temp/pose.py')
-        await create_subprocess_exec('python', 'auto.py')
-        time.sleep(0.2)
-        url= r"GeometryDash\cycles.mp3"
-        bpm = 140  
-        if ser and ser.is_open:
-            ser.write(f"{bpm}\n".encode())  
-        audio.src = url
-        await audio.play()
+    
+        # Use standard Popen for detached background scripts
+        subprocess.Popen(['python', 'temp/pose.py'])
+        subprocess.Popen(['python', 'auto.py'])
+    
+        await asyncio.sleep(0.2)
         asyncio.create_task(power_calc())
 
-        
-    async def electroman_play(e):
-        await create_subprocess_exec('python', 'temp/pose.py')
-        
-        await create_subprocess_exec('python', 'auto.py')
-        tracker.reset()
-        await off_send(None) 
-        time.sleep(0.2)
-        url = r"GeometryDash\electroman.mp3"
-        bpm = 170  
-        if ser and ser.is_open:
-            ser.write(f"{bpm}\n".encode())  
-        audio.src = url
-        await audio.play()
-        asyncio.create_task(power_calc())
-    async def geometrical_play(e):
-        await create_subprocess_exec('python', 'temp/pose.py')
-        await create_subprocess_exec('python', 'auto.py')
-        tracker.reset()
-        await off_send(None)  
-        time.sleep(0.2)
-        url = r"GeometryDash\geometry.mp3"
-        bpm = 148  
-        if ser and ser.is_open:
-            ser.write(f"{bpm}\n".encode())
-        audio.src = url
-        await audio.play()
-        asyncio.create_task(power_calc())
-    async def hexagon_play(e):
-        await create_subprocess_exec('python', 'temp/pose.py')
-        await create_subprocess_exec('python', 'auto.py')
-        tracker.reset()
-        await off_send(None)
-        time.sleep(0.2)
-        url = r"GeometryDash\hexagon.mp3"
-        bpm = 81  
-        if ser and ser.is_open:
-            ser.write(f"{bpm}\n".encode())
-        audio.src = url
-        await audio.play()
-        asyncio.create_task(power_calc())
-    async def electrodynamix_play(e):
-        await create_subprocess_exec('python', 'temp/pose.py')
-        await create_subprocess_exec('python', 'auto.py')
-        tracker.reset()
-        await off_send(None)  
-        time.sleep(0.2)
-        url = r"GeometryDash\electrodynamix.mp3"
-        bpm = 127  
-        if ser and ser.is_open:
-            ser.write(f"{bpm}\n".encode())
-        audio.src = url
-        await audio.play()
-        asyncio.create_task(power_calc())
-    async def tidalwave_play(e):
-        await create_subprocess_exec('python', 'temp/pose.py')
-        await create_subprocess_exec('python', 'auto.py')
-        tracker.reset()
-        await off_send(None)  
-        time.sleep(0.2)
-        url = r"GeometryDash\tidalwave.mp3"
-        bpm = 141 
-        if ser and ser.is_open:
-            ser.write(f"{bpm}\n".encode())
-        audio.src = url
-        await audio.play()
-        asyncio.create_task(power_calc())
-    async def amethyst_play(e):
-        await create_subprocess_exec('python', 'temp/pose.py')
-        await create_subprocess_exec('python', 'auto.py')
-        tracker.reset()
-        await off_send(None)  
-        time.sleep(0.2)
-        url = r"GeometryDash\amethyst.mp3"
-        bpm = 41.5
-        if ser and ser.is_open:
-            ser.write(f"{bpm}\n".encode())
-        audio.src = url
-        await audio.play()
-
-        asyncio.create_task(power_calc())
     def score():
         last_cmd = ""
         while True:
@@ -231,10 +165,6 @@ def main(page: ft.Page):
                 pass 
             
             time.sleep(0.01)
-    async def jumper_play(e):
-        print("Launching Jumper Mode...")
-        await audio.pause()
-        await create_subprocess_exec('python', 'hori.py')
 
     thread = threading.Thread(target=score, daemon=True)
     thread.start()
@@ -344,14 +274,8 @@ def main(page: ft.Page):
         for p in ports: p.visible = ports_view
         
         cycles_btn.visible = rhythm_game
-        electroman_btn.visible = rhythm_game
-        geometrical_btn.visible = rhythm_game
-        hexagon_btn.visible = rhythm_game
-        electrodynamix_btn.visible = rhythm_game
         score_text.visible = rhythm_game
         back_btn.visible = not main
-        tidalwave_btn.visible = rhythm_game
-        amethyst_btn.visible = rhythm_game
         delete_btn.visible = main
         audio_selec.visible = game_menu
         page.update()
@@ -369,14 +293,8 @@ def main(page: ft.Page):
     back_btn = ft.Button(content=ft.Text("🏠", size=45), on_click=go_back, height=100, width=100, visible=False)
     off_btn = ft.Button(content=ft.Text("Reset", size=45), on_click=off_send, bgcolor=ft.Colors.RED, height=100, width=400)
     game_btn = ft.Button(content=ft.Text("Games?", size=45), on_click=game_page, height=100, width=400)
-    rhythmic_btn = ft.Button(content=ft.Text("Boxing!", size=45), on_click=rhythmic_game, visible=False, width=400)
-    cycles_btn = ft.Button(content=ft.Text("Cycles", size=45), on_click=cycles_play, height=90, width=400)
-    electroman_btn = ft.Button(content=ft.Text("Electroman", size=45), on_click=electroman_play, height=90, width=400)
-    geometrical_btn = ft.Button(content=ft.Text("Geometrical Dominator", size=35), on_click=geometrical_play, height=90, width=400)
-    hexagon_btn = ft.Button(content=ft.Text("Hexagon Force", size=45), on_click=hexagon_play, height=90, width=400)
-    electrodynamix_btn = ft.Button(content=ft.Text("Electrodynamix", size=45), on_click=electrodynamix_play, height=90, width=400)
-    tidalwave_btn = ft.Button(content=ft.Text("Tidalwave", size=45), on_click=tidalwave_play, height=90, width=400)
-    amethyst_btn = ft.Button(content=ft.Text("Amethyst", size=45), on_click=amethyst_play, height=90, width=400)
+    rhythmic_btn = ft.Button(content=ft.Text("Boxing", size=45), on_click=rhythmic_game, visible=False, width=400)
+    cycles_btn = ft.Button(content=ft.Text("Play", size=45), on_click=cycles_play, height=90, width=400)
     score_text = ft.Text(f"Score: {tracker.current_total}", size=135)
     delete_btn = ft.Button(content=ft.Text("Delete Data", size=45), on_click=delete_data, bgcolor=ft.Colors.BLACK, height=100, width=400)
     audio_selec = ft.Button(content=ft.Text("Pick files", size=45), on_click=handle_pick_files, bgcolor=ft.Colors.PURPLE_900, color=ft.Colors.WHITE, height=90, width=400)
@@ -494,13 +412,7 @@ def main(page: ft.Page):
         delete_btn,
         back_btn, 
         rhythmic_btn,
-        tidalwave_btn,
-        amethyst_btn,
         cycles_btn,
-        electroman_btn,
-        geometrical_btn,
-        hexagon_btn,
-        electrodynamix_btn,
         score_text,
         jumper_btn,
         jumper_title,

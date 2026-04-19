@@ -307,12 +307,12 @@ def show_analytics():
     fig.canvas.manager.set_window_title('Ship Mode Analytics')
 
     axes[0].plot(history_1, marker='o', color='#8e44ad', linewidth=2)
-    axes[0].set_title('History: Final Score')
+    axes[0].set_title('Finale score')
     axes[0].set_xlabel('Game Session')
     axes[0].grid(True, alpha=0.3)
 
     axes[1].plot(history_2, marker='s', color='#16a085', linewidth=2)
-    axes[1].set_title('History: Dodge Percentage (%)')
+    axes[1].set_title('Percentage dodged')
     axes[1].set_xlabel('Game Session')
     axes[1].set_ylim(0, 105)
     axes[1].grid(True, alpha=0.3)
