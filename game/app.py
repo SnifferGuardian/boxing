@@ -26,11 +26,7 @@ stop_signal_path = os.path.join(script_dir, "temp/stop_signal.txt")
 
 
 url = r"C:\Users\Matt\Desktop\game\yolopose\GeometryDash\1-05. Cycles.mp3"
-try:
-    ser = serial.Serial('COM13', 115200, timeout=1) 
-except Exception as e:
-    print(f"Serial Error: {e}")
-    ser = None
+
 
 
 
@@ -63,65 +59,17 @@ def main(page: ft.Page):
         volume=1,
         balance=0,
         release_mode=fta.ReleaseMode.STOP,
-        on_loaded=lambda _: print("Loaded"),
-        on_duration_change=lambda e: print("Duration changed:", e.duration),
-        on_position_change=lambda e: print("Position changed:", e.position),
         on_state_change=check_audio_status,
-        on_seek_complete=lambda _: print("Seek complete"),
     )
     async def audio_off(e):
         await audio.seek(position=0)
         await audio.pause()
 
-    async def off_send(e):
+    def off_send(e):
         tracker.reset()
-        if ser:
-            ser.write("reset_ports\n".encode()) 
-            ser.flush()
-            await audio_off(e)
-
-            # Move all of this INSIDE the if ser: block
-            ser.write("reset_ports\n".encode())
-            ser.flush()
-            print("Arduino ports reset. Waiting for sync...")
+        audio_off(e)
             
-            await asyncio.sleep(0.2) 
-        
-            char_map = ["a", "b", "c", "d", "e", "f"]
-        
-            for index, p in enumerate(ports):
-                if not p.value: 
-                    msg = f"{char_map[index]}\n"
-                    ser.write(msg.encode()) 
-                    ser.flush()
-                    print(f"Sent Disable command: {char_map[index]}")
-                    await asyncio.sleep(0.1) 
-
-            print("Sync Complete.")
-        else:
-            # Fallback if testing without the Arduino plugged in
-            print("Serial not connected. Skipping Arduino sync.")
-            await audio_off(e)
-
-
-        ser.write("reset_ports\n".encode())
-        ser.flush()
-        print("Arduino ports reset. Waiting for sync...")
-        
-        await asyncio.sleep(0.2) 
-    
-        char_map = ["a", "b", "c", "d", "e", "f"]
-    
-        for index, p in enumerate(ports):
-            if not p.value: 
-                msg = f"{char_map[index]}\n"
-                ser.write(msg.encode()) 
-                ser.flush()
-                print(f"Sent Disable command: {char_map[index]}")
-                await asyncio.sleep(0.1) 
-
-        print("Sync Complete.")
-
+        asyncio.sleep(0.2) 
     def game_page(e):
         toggle_visibility(game_menu=True)
 
@@ -132,42 +80,12 @@ def main(page: ft.Page):
         toggle_visibility(main=True)
     async def cycles_play(e):
         tracker.reset()
-        await off_send(None)  
-    
-        # Use standard Popen for detached background scripts
+        off_send(None)
         subprocess.Popen(['python', 'temp/pose.py'])
         subprocess.Popen(['python', 'auto.py'])
-    
         await asyncio.sleep(0.2)
         asyncio.create_task(power_calc())
 
-    def score():
-        last_cmd = ""
-        while True:
-            
-            if ser and ser.in_waiting > 0:
-                try:
-                    line = ser.readline().decode('utf-8').strip()
-                    if line:
-                        tracker.update(line)
-                except Exception as e:
-                    print(f"Serial Read Error: {e}")
-            
-            try:
-                if os.path.exists("cmd.txt"):
-                    with open("cmd.txt", 'r') as f:
-                        cmd = f.read().strip()
-                    
-                    if cmd and cmd != last_cmd and ser:
-                        ser.write(f"{cmd}\n".encode())
-                        last_cmd = cmd 
-            except Exception as e:
-                pass 
-            
-            time.sleep(0.01)
-
-    thread = threading.Thread(target=score, daemon=True)
-    thread.start()
     def delete_data(e):
         with open("perc.txt", 'w') as f:
             f.write("")
@@ -428,15 +346,6 @@ def main(page: ft.Page):
         flap_play_btn,
         audio_selec,
     )
-
-
-
-
-
-
-
-
-
 
     async def power_calc():
         reactionlist.clear()

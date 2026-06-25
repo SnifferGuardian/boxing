@@ -21,7 +21,6 @@ int activeTarget = -1;
 
 void setup() {
   Serial.begin(BAUD_RATE);
-  // Increased timeout to 100ms for more stability
   Serial.setTimeout(100); 
   
   for(int i = 0; i < 4; i++) {
@@ -29,7 +28,7 @@ void setup() {
     rings[i].setBrightness(100);
     rings[i].show(); 
   }
-  Serial.println("SYSTEM_READY"); 
+  Serial.println("start"); 
 }
 
 void setRingColor(int targetIndex, uint32_t color) {
@@ -40,7 +39,6 @@ void setRingColor(int targetIndex, uint32_t color) {
 }
 
 void loop() {
-  // --- PART 1: Standard Command Input ---
   if (Serial.available() > 0 && !isWaitingForHit) {
     String input = Serial.readStringUntil('\n');
     input.trim();
@@ -54,13 +52,18 @@ void loop() {
       testDuration = input.substring(secondComma + 1).toInt();
 
       if(activeTarget >= 0 && activeTarget < 4) {
-        uint32_t targetColor = (colorChar == 'R') ? rings[activeTarget].Color(255, 0, 0) : 
-                               (colorChar == 'G') ? rings[activeTarget].Color(0, 255, 0) : 
-                               rings[activeTarget].Color(0, 0, 255);
+      uint32_t targetColor = (colorChar == 'R') ? rings[activeTarget].Color(255, 0, 0) : 
+                              (colorChar == 'G') ? rings[activeTarget].Color(0, 255, 0) : 
+                              (colorChar == 'B') ? rings[activeTarget].Color(0,0,255) :
+                              (colorChar == 'Y') ? rings[activeTarget].Color(255,255,0):
+                              (colorChar == 'M') ? rings[activeTarget].Color(255,0,255):
+                              (colorChar == 'C') ? rings[activeTarget].Color(0,255,255):
+                              (colorChar == 'W') ? rings[activeTarget].Color(255,255,255):
+                              rings[activeTarget].Color(0,0,0);
+
         
         setRingColor(activeTarget, targetColor);
         
-        // ADDED: Small delay to let electrical noise settle after LEDs turn on
         delay(50); 
         
         startTime = millis();
@@ -69,7 +72,6 @@ void loop() {
     }
   }
 
-  // --- PART 2: The Monitor & Debugger ---
   if (isWaitingForHit) {
     int piezoStrength = analogRead(PIEZO_PINS[activeTarget]);
     

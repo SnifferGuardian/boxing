@@ -36,9 +36,9 @@ left_ship_y = height / 2
 right_ship_y = height / 2
 
 SCORE = 0
-POINTS_DODGE = 50
-POINTS_HIT_PENALTY = -5
-INACTIVITY_DRAIN = -75
+POINTS_DODGE = 70
+POINTS_HIT_PENALTY = -2
+INACTIVITY_DRAIN = -7.5
 THRESH = 50.0
 stats = {"dodged": 0, "hit": 0, "points_log": []}
 
